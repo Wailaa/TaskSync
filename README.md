@@ -10,7 +10,7 @@ TaskSync is a collaborative task management system built with Express.js and Mon
 
 ## Installation
 ```sh
-git clone https://github.com/yourusername/tasksync.git
+git clone https://github.com/wailaa/tasksync.git
 cd tasksync
 npm install
 npm run dev
