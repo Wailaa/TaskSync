@@ -1,4 +1,5 @@
 import { getDB } from "../config/db.js";
+import { compareHashed, creatHashPass } from "../utils/hassPass.js"; 
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -11,11 +12,12 @@ export const register = async (req, res) => {
         if (existingUser){
             return res.status(400).json({message : 'Usr already exists'});
         }
-        
+
+        const hashedPass = await creatHashPass(password)
         const newUser = {
             username,
             email,
-            password,
+            password: hashedPass,
             createdAt: new Date(),
         };
 
