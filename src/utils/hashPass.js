@@ -1,4 +1,3 @@
-
 import bcrypt from 'bcrypt';
 
 export const creatHashPass = async (password) => {
