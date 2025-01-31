@@ -9,6 +9,7 @@ export async function connectDB() {
         await client.connect();
         db = client.db('task_managment');
         console.log('✅ Connected to MongoDB');
+        console.log('✅ Connected to task_managment database');
     }catch (error){
         console.error('❌ MongoDB Connection Error:', error);
         process.exit(1);
