@@ -1,6 +1,6 @@
 import User from '../models/userModels.js'
 import { compareHashed, createHashPass } from "../utils/hashPass.js";
-import { createAccessToken } from "../utils/jwtTokens.js";
+import { createAccessToken, createRefreshToken } from "../utils/jwtTokens.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -43,14 +43,14 @@ export const login = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        console.log("user Pass:", user.password);
         const isPassValid = await compareHashed(password, user.password);
         if (!isPassValid) {
             return res.status(401).json({ message: "Invalid username or password" });
         }
 
         const accessToken = createAccessToken(user.username);
-        return res.status(201).json({ message: "User logged in successfully", accessToken });
+        const refreshToken = createRefreshToken(user.username);
+        return res.status(201).json({ message: "User logged in successfully", accessToken, refreshToken });
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "Internal Server error" });
