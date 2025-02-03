@@ -25,3 +25,13 @@ export const createTask = async (req, res) => {
         res.status(500).json({ message: "failed to create task" })
     }
 };
+
+export const getTasks = async (req, res) => {
+    try {
+        const tasks = await Task.find({ assignee: req.user._id });
+        return res.status(200).json(tasks);
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to fetch tasks" })
+    }
+};
+
