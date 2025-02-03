@@ -1,6 +1,7 @@
+import BlackListedToken from '../models/blackListedToken.js';
 import User from '../models/userModels.js'
 import { compareHashed, createHashPass } from "../utils/hashPass.js";
-import { createAccessToken, createRefreshToken } from "../utils/jwtTokens.js";
+import { createAccessToken, createRefreshToken, getClaims } from "../utils/jwtTokens.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -57,5 +58,33 @@ export const login = async (req, res) => {
     }
 };
 export const logOut = async (req, res) => {
-    return res.status(200).json({ message: "user logged out successfully" });
-}
+    try {
+        const { authorization } = req.headers;
+        const { refreshToken } = req.body;
+        const accessToken = authorization?.split(' ')[1];
+
+        if (!accessToken) {
+            return res.status(401).send({
+                message: 'Token required'
+            });
+        }
+
+        if (!refreshToken) {
+            return res.status(400).json({ message: "Refresh token required" });
+        }
+
+        const accessTokenClaims = getClaims(accessToken);
+        const accTimeExpiresAt = new Date(accessTokenClaims.exp * 1000);
+        await BlackListedToken.create({ token: accessToken, expiresAt: accTimeExpiresAt });
+
+        const refreshTokenClaims = getClaims(refreshToken);
+        const refTimeExpiresAt = new Date(refreshTokenClaims.exp * 1000);
+        await BlackListedToken.create({ token: refreshToken, expiresAt: refTimeExpiresAt });
+
+        return res.status(200).json({ message: "logged out successfully" });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Server error" });
+    }
+
+};
