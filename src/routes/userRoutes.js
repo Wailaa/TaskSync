@@ -8,4 +8,4 @@ userRouter.post("/login", login);
 userRouter.post("/logout", logOut);
 userRouter.post("/refresh", refreshRequest);
 
-export { userRouter };
+export default userRouter;
