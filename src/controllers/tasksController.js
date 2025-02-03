@@ -1,3 +1,4 @@
+import { trusted } from "mongoose";
 import Task from "../models/taskModels.js"
 import User from "../models/userModels.js";
 export const createTask = async (req, res) => {
@@ -46,4 +47,17 @@ export const getTaskById = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: "Failed to fetch task" })
     }
-}
+};
+
+export const updateTask = async (req, res) => {
+    try {
+        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        res.status(200).json({ message: "Task updated successfully", task: updatedTask });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to update task", error });
+    }
+};
