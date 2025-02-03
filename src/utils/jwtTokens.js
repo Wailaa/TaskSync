@@ -11,22 +11,30 @@ export const createRefreshToken = (username) => {
 };
 
 export const isTokenValid = async (token) => {
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    const result = jwt.verify(token, process.env.JWT_SECRET, (err, username) => {
         if (err) {
             return false;
         }
-        return user
+        return username
     });
+    return result;
 };
 
 export const getClaims = (token) => {
-    try {
-        const decoded = jwt.decode(token);
-        if (!decoded || !decoded.exp) {
-            throw new Error('Invalid token or missing expiration time');
-        }
-        return decoded;
-    } catch (error) {
-        throw new Error('Failed to decode token');
+    const decoded = jwt.decode(token);
+    if (!decoded || !decoded.exp) {
+        console.error("error decoding token: ", error);
+        return null;
     }
+    return decoded;
+
 };
+
+export const refreshAccessToken = async (refreshToken) => {
+    const user = await isTokenValid(refreshToken);
+    if (!user) {
+        return nil
+    }
+    const accessToken = createAccessToken(user);
+    return accessToken;
+}

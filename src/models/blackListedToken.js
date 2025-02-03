@@ -5,4 +5,5 @@ const BlacklistSchema = new mongoose.Schema({
     expiresAt: { type: Date, required: true, index: { expires: 0 } },
 });
 
-export default mongoose.model("BlacklistedToken", BlacklistSchema);
+const BlackList = mongoose.model("BlacklistedToken", BlacklistSchema);
+export default BlackList;
