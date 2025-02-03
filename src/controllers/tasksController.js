@@ -35,3 +35,15 @@ export const getTasks = async (req, res) => {
     }
 };
 
+export const getTaskById = async (req, res) => {
+    try {
+        const tasks = await Task.findById(req.params.id);
+        if (!tasks) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        return res.status(200).json(tasks);
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to fetch task" })
+    }
+}

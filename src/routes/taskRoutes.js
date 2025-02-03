@@ -7,5 +7,6 @@ const taskRouter = express.Router();
 
 taskRouter.post("/", isAuthorized, createTask);
 taskRouter.get("/", isAuthorized, getTasks);
+taskRouter.get("/:id", isAuthorized, getTaskById);
 
 export default taskRouter;
