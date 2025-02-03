@@ -2,9 +2,6 @@ import BlackList from '../models/blackListedToken.js';
 import User from '../models/userModels.js'
 import { compareHashed, createHashPass } from "../utils/hashPass.js";
 import { createAccessToken, createRefreshToken, getClaims, isTokenValid } from "../utils/jwtTokens.js";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 export const register = async (req, res) => {
     try {
@@ -49,8 +46,8 @@ export const login = async (req, res) => {
             return res.status(401).json({ message: "Invalid username or password" });
         }
 
-        const accessToken = createAccessToken(user.username);
-        const refreshToken = createRefreshToken(user.username);
+        const accessToken = createAccessToken(user);
+        const refreshToken = createRefreshToken(user);
         return res.status(201).json({ message: "User logged in successfully", accessToken, refreshToken });
     } catch (error) {
         console.error("Login error:", error);
@@ -105,6 +102,6 @@ export const refreshRequest = async (req, res) => {
         return res.status(401).json({ message: "expired token" });
     }
 
-    const accessToken = createAccessToken(user.username);
+    const accessToken = createAccessToken(user);
     return res.status(200).json({ message: "new access token", accessToken });
 };

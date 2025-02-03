@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 
-export const createAccessToken = (username) => {
-    const accessToken = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES });
+export const createAccessToken = (user) => {
+    const accessToken = jwt.sign({ username: user.username, _id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES });
     return accessToken
 };
 
-export const createRefreshToken = (username) => {
-    const refreshToken = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_REFRESH_EXPIRES });
+export const createRefreshToken = (user) => {
+    const refreshToken = jwt.sign({ username: user.username, _id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_REFRESH_EXPIRES });
     return refreshToken
 };
 
@@ -29,12 +29,3 @@ export const getClaims = (token) => {
     return decoded;
 
 };
-
-export const refreshAccessToken = async (refreshToken) => {
-    const user = await isTokenValid(refreshToken);
-    if (!user) {
-        return nil
-    }
-    const accessToken = createAccessToken(user);
-    return accessToken;
-}

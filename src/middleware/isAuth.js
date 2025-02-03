@@ -1,4 +1,5 @@
-import { isTokenValid, isTokenValid } from "../utils/jwtTokens";
+import BlackList from "../models/blackListedToken.js";
+import { isTokenValid } from "../utils/jwtTokens.js";
 
 
 export const isAuthorized = async (req, res, next) => {
@@ -10,7 +11,7 @@ export const isAuthorized = async (req, res, next) => {
             });
         }
 
-        const isBlacklisted = await BlacklistedToken.findOne({ token: accessToken });
+        const isBlacklisted = await BlackList.findOne({ token: accessToken });
         if (isBlacklisted) {
             return res.status(401).json({ message: "Token has been revoked" });
         }
@@ -19,7 +20,8 @@ export const isAuthorized = async (req, res, next) => {
         if (!user) {
             return res.status(401).send({ message: 'invalid token' });
         }
-        req.user = user;
+        req.user = { username: user.username, _id: user._id };
+
         next();
 
 
