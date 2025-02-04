@@ -1,4 +1,5 @@
 import BlackList from "../models/blackListedToken.js";
+import User from "../models/userModels.js";
 import { isTokenValid } from "../utils/jwtTokens.js";
 
 
@@ -20,10 +21,14 @@ export const isAuthorized = async (req, res, next) => {
         if (!user) {
             return res.status(401).send({ message: 'invalid token' });
         }
-        req.user = { username: user.username, _id: user._id };
 
+        const userExists = await User.findById(user._id);
+        if (!userExists) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        req.user = { username: userExists.username, _id: userExists._id, role: userExists.role };
         next();
-
 
     } catch (error) {
         console.error("Authorization Error:", error);
