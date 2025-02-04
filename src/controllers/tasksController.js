@@ -29,8 +29,21 @@ export const createTask = async (req, res) => {
 
 export const getTasks = async (req, res) => {
     try {
-        const tasks = await Task.find({ assignee: req.user._id });
-        return res.status(200).json(tasks);
+        const { page = 1, limit = 10, status, priority } = req.query;
+
+        const filter = { assignee: req.user._id };
+        if (status) filter.status = status;
+        if (priority) filter.priority = priority;
+
+        const tasks = await Task.find(filter).limit(limit * 1).skip((page - 1) * limit).exec();
+        const taskCount = await Task.countDocuments(filter);
+
+        return res.status(200).json({
+            totalTasks: taskCount,
+            totalPages: Math.ceil(taskCount / limit),
+            currentPage: page,
+            tasks,
+        });
     } catch (error) {
         return res.status(500).json({ message: "Failed to fetch tasks" })
     }
