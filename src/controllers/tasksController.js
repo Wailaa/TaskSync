@@ -1,6 +1,9 @@
 
 import Task from "../models/taskModels.js"
 import User from "../models/userModels.js";
+import { emitNewTask } from "../notifications/userNotifications.js";
+
+
 export const createTask = async (req, res) => {
     try {
         const { title, description, status, priority, dueDate } = req.body;
@@ -20,6 +23,7 @@ export const createTask = async (req, res) => {
         });
 
         await newTask.save();
+        emitNewTask(newTask);
         res.status(201).json({ message: "Task created successfully", task: newTask });
     } catch (error) {
         console.error("create task error:", error);
