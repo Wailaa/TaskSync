@@ -1,7 +1,7 @@
 
 import Task from "../models/taskModels.js"
 import User from "../models/userModels.js";
-import { emitNewTask } from "../notifications/userNotifications.js";
+import { emitDeleteTask, emitNewTask, emitUpdatedTask } from "../notifications/userNotifications.js";
 
 
 export const createTask = async (req, res) => {
@@ -73,6 +73,7 @@ export const updateTask = async (req, res) => {
             return res.status(404).json({ message: "Task not found" });
         }
 
+        emitUpdatedTask(updatedTask);
         res.status(200).json({ message: "Task updated successfully", task: updatedTask });
     } catch (error) {
         res.status(500).json({ message: "Failed to update task", error });
@@ -85,6 +86,8 @@ export const deleteTask = async (req, res) => {
         if (!deletedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
+
+        emitDeleteTask(req.params.id);
         res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Failed to delete task", error });
