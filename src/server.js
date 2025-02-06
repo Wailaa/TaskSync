@@ -6,6 +6,7 @@ import userRouter from './routes/userRoutes.js';
 import taskRouter from './routes/taskRoutes.js';
 import http from "http";
 import { initializeSocket } from "./config/socket.js";
+import { connectRedis } from "./config/redis.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 connectDB();
+connectRedis();
 
 const server = http.createServer(app);
 initializeSocket(server);
@@ -30,6 +32,6 @@ app.use("/api/tasks", taskRouter);
 
 const PORT = process.env.PORT;
 server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`✅ Server running on port ${PORT}`);
 });
 
