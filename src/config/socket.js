@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { addOnlineUser, addSocketToUser, removeOnlineUser } from "../services/onlineUsersService.js";
 
 let io;
 
@@ -10,12 +11,19 @@ export const initializeSocket = (server) => {
             credentials: true
         }
     });
-    console.log("Socket.io is initialized successfully");
+    console.log("✅ Socket.io is initialized successfully");
 
     io.on("connection", (socket) => {
-        console.log("A user connected:", socket.id);
+        console.log('User connected with ID:', socket.id);
+
+        socket.on('register', (data) => {
+            addOnlineUser(data.userId, socket.id);
+            addSocketToUser(data.userId, socket.id);
+            console.log('Registered User ID:', data.userId);
+        });
 
         socket.on("disconnect", () => {
+            removeOnlineUser(socket.id);
             console.log("User disconnected:", socket.id);
         });
     });
@@ -24,8 +32,9 @@ export const initializeSocket = (server) => {
 };
 
 export const getSocketInstance = () => {
+
     if (!io) {
-        throw new Error("Socket.io has not been initialized!");
+        throw new Error("❌ Socket.io has not been initialized!");
     }
     return io;
 };
