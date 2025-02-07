@@ -1,7 +1,7 @@
-import BlackList from '../models/blackListedToken.js';
 import User from '../models/userModels.js'
+import { blacklistJWT, isTokenBlacklisted } from '../services/tokenBlacklist.js';
 import { compareHashed, createHashPass } from "../utils/hashPass.js";
-import { createAccessToken, createRefreshToken, getClaims, isTokenValid } from "../utils/jwtTokens.js";
+import { createAccessToken, createRefreshToken, isTokenValid } from "../utils/jwtTokens.js";
 
 export const register = async (req, res) => {
     try {
@@ -70,13 +70,8 @@ export const logOut = async (req, res) => {
             return res.status(400).json({ message: "Refresh token required" });
         }
 
-        const accessTokenClaims = getClaims(accessToken);
-        const accTimeExpiresAt = new Date(accessTokenClaims.exp * 1000);
-        await BlackList.create({ token: accessToken, expiresAt: accTimeExpiresAt });
-
-        const refreshTokenClaims = getClaims(refreshToken);
-        const refTimeExpiresAt = new Date(refreshTokenClaims.exp * 1000);
-        await BlackList.create({ token: refreshToken, expiresAt: refTimeExpiresAt });
+        await blacklistJWT(accessToken);
+        await blacklistJWT(refreshToken);
 
         return res.status(200).json({ message: "logged out successfully" });
     } catch (error) {
@@ -97,8 +92,8 @@ export const refreshRequest = async (req, res) => {
         return res.status(401).send({ message: 'invalid token' });
     }
 
-    const isTokenBlacklisted = await BlackList.findOne({ token: refreshToken });
-    if (isTokenBlacklisted) {
+    const isBlacklisted = await isTokenBlacklisted(refreshToken);
+    if (isBlacklisted) {
         return res.status(401).json({ message: "expired token" });
     }
 
