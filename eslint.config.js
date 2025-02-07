@@ -9,7 +9,7 @@ export default [
   {
     "env": {
       "node": true,
-      "commonjs": true
+      "commonjs": false
     },
     "extends": "eslint:recommended",
     "rules": {

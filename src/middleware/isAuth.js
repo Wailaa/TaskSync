@@ -1,4 +1,3 @@
-import BlackList from "../models/blackListedToken.js";
 import User from "../models/userModels.js";
 import { isTokenBlacklisted } from "../services/tokenBlacklist.js";
 import { isTokenValid } from "../utils/jwtTokens.js";
