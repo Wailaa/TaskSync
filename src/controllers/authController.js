@@ -5,7 +5,7 @@ import { createAccessToken, createRefreshToken, isTokenValid } from "../utils/jw
 
 export const register = async (req, res) => {
     try {
-        const { username, password, email } = req.body;
+        const { username, password, email, role } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -17,6 +17,7 @@ export const register = async (req, res) => {
             username,
             email,
             password: hashedPass,
+            role
         });
 
         await newUser.save();
@@ -99,4 +100,14 @@ export const refreshRequest = async (req, res) => {
 
     const accessToken = createAccessToken(user);
     return res.status(200).json({ message: "new access token", accessToken });
+};
+
+export const assignUser = async (res, req) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true });
+        res.json(user);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+
 };

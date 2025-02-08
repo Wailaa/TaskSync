@@ -6,7 +6,7 @@ import { emitDeleteTask, emitNewTask, emitUpdatedTask } from "../notifications/u
 
 export const createTask = async (req, res) => {
     try {
-        const { title, description, status, priority, dueDate } = req.body;
+        const { title, description, status, priority, dueDate, assignee } = req.body;
 
         const userExists = await User.findById(req.user._id);
         if (!userExists) {
@@ -19,7 +19,8 @@ export const createTask = async (req, res) => {
             status,
             priority,
             dueDate,
-            assignee: userExists._id,
+            assignee,
+            createdBy: userExists._id,
         });
 
         await newTask.save();
@@ -33,9 +34,19 @@ export const createTask = async (req, res) => {
 
 export const getTasks = async (req, res) => {
     try {
-        const { page = 1, limit = 10, status, priority } = req.query;
+        const { page = 1, limit = 10, status, priority, userId } = req.query;
 
-        const filter = { assignee: req.user._id };
+        let filter = { assignee: req.user._id };
+
+        if (req.user.role === "Admin") {
+            filter = {};
+        }
+
+        if (req.user.role === "Manager" && userId) {
+            filter.assignee = userId;
+        }
+
+
         if (status) filter.status = status;
         if (priority) filter.priority = priority;
 
