@@ -94,3 +94,20 @@ export const deleteTask = async (req, res) => {
         res.status(500).json({ message: "Failed to delete task", error });
     }
 }
+
+export const assignTask = async (req, res) => {
+    try {
+        const { newUserId } = req.body;
+        const task = await Task.findById(req.params.id);
+
+        if (!task) return res.status(404).json({ message: "Task not found" });
+
+        task.assignee = newUserId;
+        await task.save();
+
+        res.json({ message: "Task reassigned successfully", task });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+
+};
