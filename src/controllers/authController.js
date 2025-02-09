@@ -102,7 +102,7 @@ export const refreshRequest = async (req, res) => {
     return res.status(200).json({ message: "new access token", accessToken });
 };
 
-export const assignUser = async (res, req) => {
+export const assignRoleToUser = async (res, req) => {
     try {
         const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true });
         res.json(user);
