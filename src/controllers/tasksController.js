@@ -2,6 +2,7 @@
 import Task from "../models/taskModels.js"
 import User from "../models/userModels.js";
 import { emitDeleteTask, emitNewTask, emitUpdatedTask } from "../notifications/userNotifications.js";
+import { buildTaskFilter } from "../utils/taskUtils.js";
 
 
 export const createTask = async (req, res) => {
@@ -34,21 +35,9 @@ export const createTask = async (req, res) => {
 
 export const getTasks = async (req, res) => {
     try {
-        const { page = 1, limit = 10, status, priority, userId } = req.query;
+        const { page = 1, limit = 10, status, priority, scope = 'self' } = req.query;
 
-        let filter = { assignee: req.user._id };
-
-        if (req.user.role === "Admin") {
-            filter = {};
-        }
-
-        if (req.user.role === "Manager" && userId) {
-            filter.assignee = userId;
-        }
-
-
-        if (status) filter.status = status;
-        if (priority) filter.priority = priority;
+        const filter = await buildTaskFilter(req.user, scope, status, priority);
 
         const tasks = await Task.find(filter).limit(limit * 1).skip((page - 1) * limit).exec();
         const taskCount = await Task.countDocuments(filter);
@@ -60,6 +49,7 @@ export const getTasks = async (req, res) => {
             tasks,
         });
     } catch (error) {
+        console.error("Error fetching tasks:", error);
         return res.status(500).json({ message: "Failed to fetch tasks" })
     }
 };
