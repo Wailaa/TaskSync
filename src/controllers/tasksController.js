@@ -69,6 +69,15 @@ export const getTaskById = async (req, res) => {
 
 export const updateTask = async (req, res) => {
     try {
+        const userRole = req.user.role;
+
+        if (userRole === 'user') {
+            if (!req.body.hasOwnProperty('status')) {
+                return res.status(400).json({ message: "Only the 'status' field can be updated, and it must be provided." });
+            }
+            req.body = { status: req.body.status };
+        }
+
         const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedTask) {
             return res.status(404).json({ message: "Task not found" });
