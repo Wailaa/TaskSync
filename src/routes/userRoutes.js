@@ -1,7 +1,7 @@
 import express from 'express';
 import { isAuthorized } from "../middleware/isAuth.js";
 import { clientRole } from "../middleware/userRole.js";
-import { register, login, logOut, refreshRequest, assignRoleToUser } from "../controllers/authController.js"
+import { register, login, logOut, refreshRequest, assignRoleToUser } from "../controllers/userController.js"
 
 
 const userRouter = express.Router();
