@@ -1,4 +1,4 @@
-import Task from "../models/taskModels.js"
+import { Task, Subtask } from "../models/taskModels.js"
 import User from "../models/userModels.js";
 import { emitDeleteTask, emitNewTask, emitUpdatedTask } from "../notifications/userNotifications.js";
 import { buildTaskFilter } from "../utils/taskUtils.js";
@@ -44,7 +44,7 @@ export const getTasks = async (req, res) => {
 
         const filter = await buildTaskFilter(req.user, scope, status, priority);
 
-        const tasks = await Task.find(filter).limit(limit * 1).skip((page - 1) * limit).exec();
+        const tasks = await Task.find(filter).populate("subtasks").limit(limit * 1).skip((page - 1) * limit).exec();
         const taskCount = await Task.countDocuments(filter);
 
         return res.status(200).json({
@@ -61,7 +61,7 @@ export const getTasks = async (req, res) => {
 
 export const getTaskById = async (req, res) => {
     try {
-        const tasks = await Task.findById(req.params.id);
+        const tasks = await Task.findById(req.params.id).populate("subtasks");
         if (!tasks) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -124,4 +124,68 @@ export const assignTask = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 
+};
+
+export const createSubtask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, assignedTo } = req.body;
+
+        const task = await Task.findById(id);
+        if (!task) {
+            return res.status(404).json({ message: "Parent task not found" });
+        }
+
+        const subtask = new Subtask({ title, parentTask: id, assignedTo, createdBy: req.user._id });
+        await subtask.save();
+
+        task.subtasks.push(subtask._id);
+        await task.save();
+
+        return res.status(201).json({ message: "Subtask created", subtask });
+    } catch (error) {
+        res.status(500).json({ message: "Error creating subtask" });
+    }
+};
+
+export const assignSubtaskToUser = async (req, res) => {
+    try {
+        const { subtaskId } = req.params;
+        const { userId } = req.body;
+
+        const subtask = await Subtask.findById(subtaskId);
+        if (!subtask) {
+            return res.status(404).json({ message: "Subtask not found" });
+        }
+
+        subtask.assignedTo = userId;
+        await subtask.save();
+
+        return res.status(200).json({ message: "Subtask assigned", subtask });
+    } catch (error) {
+        res.status(500).json({ message: "Error assigning subtask" });
+    }
+};
+
+export const updateSubTask = async (req, res) => {
+    try {
+        const userRole = req.user.role;
+
+        if (userRole === 'user') {
+            if (!req.body.hasOwnProperty('status')) {
+                return res.status(400).json({ message: "Only the 'status' field can be updated, and it must be provided." });
+            }
+            req.body = { status: req.body.status };
+        }
+
+        const updatedSubTask = await Subtask.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedSubTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+
+        res.status(200).json({ message: "Task updated successfully", task: updatedSubTask });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to update task", error });
+    }
 };
