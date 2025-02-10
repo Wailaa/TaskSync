@@ -6,7 +6,7 @@ import { clientRole } from "../middleware/userRole.js";
 const taskRouter = express.Router();
 
 
-taskRouter.post("/", isAuthorized, clientRole(["admin", "manager"]), createTask);
+taskRouter.post("/", isAuthorized, createTask);
 taskRouter.get("/", isAuthorized, getTasks);
 taskRouter.get("/:id", isAuthorized, getTaskById);
 taskRouter.put("/:id", isAuthorized, updateTask);

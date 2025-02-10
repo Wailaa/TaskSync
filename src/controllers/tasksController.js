@@ -1,4 +1,3 @@
-
 import Task from "../models/taskModels.js"
 import User from "../models/userModels.js";
 import { emitDeleteTask, emitNewTask, emitUpdatedTask } from "../notifications/userNotifications.js";
@@ -20,9 +19,15 @@ export const createTask = async (req, res) => {
             status,
             priority,
             dueDate,
-            assignee,
+            assignee: userExists._id,
             createdBy: userExists._id,
         });
+
+        if (req.user.role === "manager" || req.role === "admin") {
+            if (assignee) {
+                newTask.assignee = assignee;
+            }
+        }
 
         await newTask.save();
         emitNewTask(newTask);
