@@ -1,6 +1,7 @@
 import { Task, Subtask } from "../models/taskModels.js"
 import User from "../models/userModels.js";
 import { emitDeleteTask, emitNewTask, emitUpdatedTask } from "../notifications/userNotifications.js";
+import { createActivityLogs } from "../utils/activityLogger.js";
 import { buildTaskFilter } from "../utils/taskUtils.js";
 
 
@@ -88,6 +89,9 @@ export const updateTask = async (req, res) => {
             return res.status(404).json({ message: "Task not found" });
         }
 
+        const action = `Updated task: ${JSON.stringify(req.body)}`;
+        createActivityLogs(req.user._id, req.params.id, action);
+
         emitUpdatedTask(updatedTask);
         res.status(200).json({ message: "Task updated successfully", task: updatedTask });
     } catch (error) {
@@ -103,6 +107,10 @@ export const deleteTask = async (req, res) => {
         }
 
         emitDeleteTask(req.params.id);
+
+        const action = `Deleted task: ${JSON.stringify(req.body)}`;
+        createActivityLogs(req.user._id, req.params.id, action);
+
         res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Failed to delete task", error });
@@ -118,6 +126,9 @@ export const assignTask = async (req, res) => {
 
         task.assignee = newUserId;
         await task.save();
+
+        const action = `New user Assigned: ${newUserId}`;
+        createActivityLogs(req.user._id, req.params.id, action);
 
         res.json({ message: "Task reassigned successfully", task });
     } catch (error) {
@@ -142,6 +153,9 @@ export const createSubtask = async (req, res) => {
         task.subtasks.push(subtask._id);
         await task.save();
 
+        const action = `Subtask created task: ${JSON.stringify(req.body)}`;
+        createActivityLogs(req.user._id, req.params.id, action);
+
         return res.status(201).json({ message: "Subtask created", subtask });
     } catch (error) {
         res.status(500).json({ message: "Error creating subtask" });
@@ -160,6 +174,9 @@ export const assignSubtaskToUser = async (req, res) => {
 
         subtask.assignedTo = userId;
         await subtask.save();
+
+        const action = `Subtask assigned : for userId ${userId} ,subtaskId :${subtaskId}`;
+        createActivityLogs(req.user._id, subtask.parentTask, action);
 
         return res.status(200).json({ message: "Subtask assigned", subtask });
     } catch (error) {
@@ -183,6 +200,8 @@ export const updateSubTask = async (req, res) => {
             return res.status(404).json({ message: "Task not found" });
         }
 
+        const action = `Subtask updated : subtaskId :${req.params.id}`;
+        createActivityLogs(req.user._id, updatedSubTask.parentTask, action);
 
         res.status(200).json({ message: "Task updated successfully", task: updatedSubTask });
     } catch (error) {

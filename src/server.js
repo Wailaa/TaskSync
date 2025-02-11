@@ -8,9 +8,8 @@ import userRouter from './routes/userRoutes.js';
 import taskRouter from './routes/taskRoutes.js';
 import commentRouter from "./routes/commentRouter.js";
 import categoryRouter from "./routes/categoriesRoutes.js";
-import http from "http";
+import activityRouter from "./routes/activityLogRoutes.js";
 import { initializeSocket } from "./config/socket.js";
-import { connectRedis } from "./config/redis.js";
 
 dotenv.config();
 
@@ -35,6 +34,7 @@ app.use("/api/user", userRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/category", categoryRouter);
 app.use("/api/comment", commentRouter);
+app.use("/api/activity", activityRouter);
 
 const PORT = process.env.PORT;
 server.listen(PORT, () => {
