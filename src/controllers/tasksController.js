@@ -24,7 +24,7 @@ export const createTask = async (req, res) => {
             createdBy: userExists._id,
         });
 
-        if (req.user.role === "manager" || req.role === "admin") {
+        if (req.user.role === "manager" || req.user.role === "admin") {
             if (assignee) {
                 newTask.assignee = assignee;
             }
@@ -32,7 +32,7 @@ export const createTask = async (req, res) => {
 
         await newTask.save();
 
-        await emitNewEvent("taskCreated", newTask.assignee, "Task created for you");
+        await emitNewEvent("taskCreated", newTask.assignee, newTask.title);
 
         res.status(201).json({ message: "Task created successfully", task: newTask });
     } catch (error) {

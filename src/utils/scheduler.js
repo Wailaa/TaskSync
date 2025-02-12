@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { Task } from "../models/taskModels.js";
 import { Notification } from "../models/notificationModels.js";
+import { emitNewEvent } from "../notifications/userNotifications.js";
 
 const checkTaskDeadlines = async () => {
 
@@ -21,6 +22,8 @@ const checkTaskDeadlines = async () => {
                     type: "task_reminder",
                 });
                 await notification.save();
+                const message = `deadline is approaching for ${task.title}`
+                await emitNewEvent("DueDate", task.assignee, message);
             }
         }
 
