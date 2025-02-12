@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { addOnlineUser, addSocketToUser, removeOnlineUser } from "../services/onlineUsersService.js";
+import { addOnlineUser, removeOnlineUser } from "../services/onlineUsersService.js";
 
 let io;
 
@@ -18,7 +18,6 @@ export const initializeSocket = (server) => {
 
         socket.on('register', (data) => {
             addOnlineUser(data.userId, socket.id);
-            addSocketToUser(data.userId, socket.id);
             console.log('Registered User ID:', data.userId);
         });
 
