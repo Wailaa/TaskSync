@@ -1,6 +1,6 @@
 import { Task, Subtask } from "../models/taskModels.js"
 import User from "../models/userModels.js";
-import { emitDeleteTask, emitNewTask, emitUpdatedTask } from "../notifications/userNotifications.js";
+import { emitNewEvent } from "../notifications/userNotifications.js"
 import { createActivityLogs } from "../utils/activityLogger.js";
 import { buildTaskFilter } from "../utils/taskUtils.js";
 
@@ -31,7 +31,9 @@ export const createTask = async (req, res) => {
         }
 
         await newTask.save();
-        emitNewTask(newTask);
+
+        await emitNewEvent("taskCreated", newTask.assignee, "Task created for you");
+
         res.status(201).json({ message: "Task created successfully", task: newTask });
     } catch (error) {
         console.error("create task error:", error);
@@ -92,7 +94,8 @@ export const updateTask = async (req, res) => {
         const action = `Updated task: ${JSON.stringify(req.body)}`;
         createActivityLogs(req.user._id, req.params.id, action);
 
-        emitUpdatedTask(updatedTask);
+        await emitNewEvent("taskUpdated", updatedTask.assignee, "Task update for title: ${updatedTask.title}");
+
         res.status(200).json({ message: "Task updated successfully", task: updatedTask });
     } catch (error) {
         res.status(500).json({ message: "Failed to update task", error });
@@ -106,7 +109,7 @@ export const deleteTask = async (req, res) => {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        emitDeleteTask(req.params.id);
+        await emitNewEvent("taskDeleted", deletedTask.assignee, "Task title: ${updatedTask.title} is deleted");
 
         const action = `Deleted task: ${JSON.stringify(req.body)}`;
         createActivityLogs(req.user._id, req.params.id, action);

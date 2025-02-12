@@ -22,3 +22,10 @@ export const removeOnlineUser = async (soketID) => {
 
     console.log(`❌ User ${userId} is offline`);
 };
+
+export const getSocketIdByUserId = async (userId) => {
+    userId = userId.toString();
+    const soketID = await getRedisClient().hGet("onlineUsers", userId);
+    console.log("this is socket ID", soketID);
+    return soketID;
+}

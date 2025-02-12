@@ -1,19 +1,22 @@
 import { getSocketInstance } from "../config/socket.js";
+import { Notification } from "../models/notificationModels.js";
+import { getSocketIdByUserId } from "../services/onlineUsersService.js";
 
 
 
-export const emitNewTask = (task) => {
-    const io = getSocketInstance();
-    io.emit("taskCreated", task);
+export const emitNewEvent = async (event, userId, message) => {
+    const SocketId = await getSocketIdByUserId(userId);
+    getSocketInstance().to(SocketId).emit(event, {
+        message, event
+    });
+    saveToNotifications(event, userId, message);
 };
 
-export const emitUpdatedTask = (updatedTask) => {
-    const io = getSocketInstance();
-    io.emit("taskUpdated", updatedTask);
-};
-
-export const emitDeleteTask = (taskID) => {
-    const io = getSocketInstance();
-    io.emit("taskDeleted", { taskId: taskID });
-
+export const saveToNotifications = async (type, userId, message) => {
+    const notification = new Notification({
+        userId,
+        message,
+        type
+    });
+    await notification.save();
 };
