@@ -43,9 +43,12 @@ export const createTask = async (req, res) => {
 
 export const getTasks = async (req, res) => {
     try {
-        const { page = 1, limit = 10, status, priority, scope = 'self' } = req.query;
+        const { page = 1, limit = 10, status, priority, scope = 'self', search } = req.query;
 
         const filter = await buildTaskFilter(req.user, scope, status, priority);
+        if (search) {
+            filter.$text = { $search: search };
+        }
 
         const tasks = await Task.find(filter).populate("subtasks").limit(limit * 1).skip((page - 1) * limit).exec();
         const taskCount = await Task.countDocuments(filter);
