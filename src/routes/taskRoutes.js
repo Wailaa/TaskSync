@@ -1,4 +1,4 @@
-import { assignSubtaskToUser, assignTask, createSubtask, createTask, deleteTask, getTaskById, getTasks, updateTask } from "../controllers/tasksController.js";
+import { assignSubtaskToUser, assignTask, createSubtask, createTask, deleteTask, getTaskById, getTasks, updateSubTask, updateTask } from "../controllers/tasksController.js";
 import express from 'express';
 import { isAuthorized } from "../middleware/isAuth.js";
 import { clientRole } from "../middleware/userRole.js";
@@ -16,6 +16,6 @@ taskRouter.delete("/:id", isAuthorized, clientRole(["admin"]), deleteTask);
 //subtasks
 taskRouter.post("/:id/subtasks", isAuthorized, createSubtask);
 taskRouter.put("/subtasks/:subtaskId/assign", isAuthorized, clientRole(["admin", "manager"]), assignSubtaskToUser);
-taskRouter.put("/subtasks/:subtaskId", isAuthorized, assignSubtaskToUser);
+taskRouter.put("/subtasks/:subtaskId", isAuthorized, updateSubTask);
 
 export default taskRouter;
