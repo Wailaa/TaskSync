@@ -1,3 +1,4 @@
+import { Subtask } from "../models/taskModels.js";
 import User from "../models/userModels.js";
 
 export const buildTaskFilter = async (user, scope, status, priority) => {
@@ -21,4 +22,12 @@ export const buildTaskFilter = async (user, scope, status, priority) => {
     if (priority) filter.priority = priority;
 
     return filter;
-};
+}
+
+export const isSubTasksDone = async (taskId) => {
+    const subtasks = await Subtask.find({ parentTask: taskId });
+    if (subtasks.length === 0) return true;
+
+    const isComplete = subtasks.every(subtask => subtask.status === "Done");
+    return isComplete;
+}

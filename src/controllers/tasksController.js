@@ -82,6 +82,13 @@ export const updateTask = async (req, res) => {
     try {
         const userRole = req.user.role;
 
+        if (req.status === "Done") {
+            const allSubtasksCompleted = await checkSubTasks(req.params.id);
+            if (!allSubtasksCompleted) {
+                return res.status(400).json({ message: "Cannot mark task as 'Done' while subtasks are incomplete." });
+            }
+        }
+
         if (userRole === 'user') {
             if (!req.body.hasOwnProperty('status')) {
                 return res.status(400).json({ message: "Only the 'status' field can be updated, and it must be provided." });
@@ -89,7 +96,7 @@ export const updateTask = async (req, res) => {
             req.body = { status: req.body.status };
         }
 
-        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, userId: req.user._id });
         if (!updatedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -201,7 +208,7 @@ export const updateSubTask = async (req, res) => {
             req.body = { status: req.body.status };
         }
 
-        const updatedSubTask = await Subtask.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedSubTask = await Subtask.findByIdAndUpdate(req.params.id, req.body, { new: true, userId: req.user._id });
         if (!updatedSubTask) {
             return res.status(404).json({ message: "Task not found" });
         }
