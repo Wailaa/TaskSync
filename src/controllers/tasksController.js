@@ -89,7 +89,7 @@ export const updateTask = async (req, res) => {
             req.body = { status: req.body.status };
         }
 
-        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, userId: req.user._id });
         if (!updatedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -201,7 +201,7 @@ export const updateSubTask = async (req, res) => {
             req.body = { status: req.body.status };
         }
 
-        const updatedSubTask = await Subtask.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedSubTask = await Subtask.findByIdAndUpdate(req.params.id, req.body, { new: true, userId: req.user._id });
         if (!updatedSubTask) {
             return res.status(404).json({ message: "Task not found" });
         }
