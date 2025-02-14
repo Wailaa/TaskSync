@@ -82,6 +82,13 @@ export const updateTask = async (req, res) => {
     try {
         const userRole = req.user.role;
 
+        if (req.status === "Done") {
+            const allSubtasksCompleted = await checkSubTasks(req.params.id);
+            if (!allSubtasksCompleted) {
+                return res.status(400).json({ message: "Cannot mark task as 'Done' while subtasks are incomplete." });
+            }
+        }
+
         if (userRole === 'user') {
             if (!req.body.hasOwnProperty('status')) {
                 return res.status(400).json({ message: "Only the 'status' field can be updated, and it must be provided." });

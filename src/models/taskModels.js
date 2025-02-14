@@ -4,7 +4,7 @@ const taskSchema = new mongoose.Schema(
     {
         title: { type: String, required: true },
         description: { type: String },
-        status: { type: String, enum: ["To-Do", "In-Progress", "Done"], default: "To-Do" },
+        status: { type: String, enum: ["pending", "In-Progress", "Done"], default: "To-Do" },
         assignee: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
         labels: [{ type: String }],
@@ -23,7 +23,7 @@ const subtaskSchema = new mongoose.Schema({
     title: { type: String, required: true },
     parentTask: { type: mongoose.Schema.Types.ObjectId, ref: "Task", required: true },
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    status: { type: String, enum: ["pending", "in-progress", "completed"], default: "pending" },
+    status: { type: String, enum: ["pending", "in-progress", "Done"], default: "pending" },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
 });
