@@ -1,5 +1,5 @@
-import User from "../models/userModels.js";
 import { isTokenBlacklisted } from "../services/tokenBlacklist.js";
+import { userService } from "../services/userService.js";
 import { isTokenValid } from "../utils/jwtTokens.js";
 
 
@@ -22,7 +22,7 @@ export const isAuthorized = async (req, res, next) => {
             return res.status(401).send({ message: 'invalid token' });
         }
 
-        const userExists = await User.findById(user._id);
+        const userExists = await userService.getUserById(user._id);
         if (!userExists) {
             return res.status(401).json({ message: "Invalid email or password" });
         }

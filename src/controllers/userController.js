@@ -2,7 +2,7 @@ import {
     blacklistJWT,
     isTokenBlacklisted,
 } from "../services/tokenBlacklist.js";
-import { UserService } from "../services/userService.js";
+import { userService } from "../services/userService.js";
 import { compareHashed } from "../utils/hashPass.js";
 import {
     createAccessToken,
@@ -14,7 +14,7 @@ export const register = async (req, res) => {
     try {
         const { username, password, email, role } = req.body;
 
-        await UserService.createUser({ username, password, email, role });
+        await userService.createUser({ username, password, email, role });
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
@@ -32,7 +32,7 @@ export const login = async (req, res) => {
                 .json({ message: "Username and password are required" });
         }
 
-        const user = await UserService.findOne({ username });
+        const user = await userService.findOne({ username });
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
@@ -105,7 +105,7 @@ export const refreshRequest = async (req, res) => {
 
 export const assignRoleToUser = async (res, req) => {
     try {
-        const user = await UserService.findByIdAndUpdate(req.params.id, {
+        const user = await userService.findByIdAndUpdate(req.params.id, {
             role: req.body.role,
         });
         res.json(user);

@@ -41,4 +41,4 @@ const createUserService = (User) => {
     return UserService;
 }
 
-export const UserService = createUserService(User);
+export const userService = createUserService(User);
