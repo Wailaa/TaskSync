@@ -1,26 +1,21 @@
-import User from '../models/userModels.js'
-import { blacklistJWT, isTokenBlacklisted } from '../services/tokenBlacklist.js';
-import { compareHashed, createHashPass } from "../utils/hashPass.js";
-import { createAccessToken, createRefreshToken, isTokenValid } from "../utils/jwtTokens.js";
+import {
+    blacklistJWT,
+    isTokenBlacklisted,
+} from "../services/tokenBlacklist.js";
+import { UserService } from "../services/userService.js";
+import { compareHashed } from "../utils/hashPass.js";
+import {
+    createAccessToken,
+    createRefreshToken,
+    isTokenValid,
+} from "../utils/jwtTokens.js";
 
 export const register = async (req, res) => {
     try {
         const { username, password, email, role } = req.body;
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: "Usr already exists" });
-        }
+        await UserService.createUser({ username, password, email, role });
 
-        const hashedPass = await createHashPass(password);
-        const newUser = new User({
-            username,
-            email,
-            password: hashedPass,
-            role
-        });
-
-        await newUser.save();
         res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
         console.error(error);
@@ -37,7 +32,7 @@ export const login = async (req, res) => {
                 .json({ message: "Username and password are required" });
         }
 
-        const user = await User.findOne({ username });
+        const user = await UserService.findOne({ username });
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
@@ -49,7 +44,14 @@ export const login = async (req, res) => {
 
         const accessToken = createAccessToken(user);
         const refreshToken = createRefreshToken(user);
-        return res.status(201).json({ message: "User logged in successfully", accessToken, refreshToken });
+
+        return res
+            .status(201)
+            .json({
+                message: "User logged in successfully",
+                accessToken,
+                refreshToken,
+            });
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "Internal Server error" });
@@ -59,11 +61,11 @@ export const logOut = async (req, res) => {
     try {
         const { authorization } = req.headers;
         const { refreshToken } = req.body;
-        const accessToken = authorization?.split(' ')[1];
+        const accessToken = authorization?.split(" ")[1];
 
         if (!accessToken) {
             return res.status(401).send({
-                message: 'Token required'
+                message: "Token required",
             });
         }
 
@@ -76,10 +78,9 @@ export const logOut = async (req, res) => {
 
         return res.status(200).json({ message: "logged out successfully" });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).json({ message: "Server error" });
     }
-
 };
 
 export const refreshRequest = async (req, res) => {
@@ -90,7 +91,7 @@ export const refreshRequest = async (req, res) => {
 
     const user = await isTokenValid(refreshToken);
     if (!user) {
-        return res.status(401).send({ message: 'invalid token' });
+        return res.status(401).send({ message: "invalid token" });
     }
 
     const isBlacklisted = await isTokenBlacklisted(refreshToken);
@@ -104,10 +105,11 @@ export const refreshRequest = async (req, res) => {
 
 export const assignRoleToUser = async (res, req) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true });
+        const user = await UserService.findByIdAndUpdate(req.params.id, {
+            role: req.body.role,
+        });
         res.json(user);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-
 };
