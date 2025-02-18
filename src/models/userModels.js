@@ -6,7 +6,23 @@ const userSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         role: { type: String, enum: ['admin', 'manager', 'user'], default: 'user' },
-        manager: { type: mongoose.Schema.Types.ObjectId, ref: "user", default: null },
+        manager: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+        tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+        activityLogs: [
+            {
+                action: String,
+                createdAt: { type: Date, default: Date.now }
+            }
+        ],
+        notifications: [
+            {
+                type: { type: String, enum: ['task-update', 'message', 'system'], required: true },
+                message: { type: String, required: true },
+                task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
+                isRead: { type: Boolean, default: false },
+                createdAt: { type: Date, default: Date.now }
+            }
+        ]
     },
     { timestamps: true }
 );

@@ -8,10 +8,8 @@ import userRouter from './routes/userRoutes.js';
 import taskRouter from './routes/taskRoutes.js';
 import commentRouter from "./routes/commentRouter.js";
 import categoryRouter from "./routes/categoriesRoutes.js";
-import activityRouter from "./routes/activityLogRoutes.js";
 import { initializeSocket } from "./config/socket.js";
 import { activateCheckTaskDeadlines } from "./utils/scheduler.js";
-import notificationRouter from "./routes/notificationsRouter.js";
 
 
 dotenv.config();
@@ -38,8 +36,6 @@ app.use("/api/user", userRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/category", categoryRouter);
 app.use("/api/comment", commentRouter);
-app.use("/api/activity", activityRouter);
-app.use("/api/notifications", notificationRouter);
 
 const PORT = process.env.PORT;
 server.listen(PORT, () => {
