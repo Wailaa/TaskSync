@@ -1,57 +1,56 @@
-import { Task, Subtask } from "../models/taskModels.js"
-import User from "../models/userModels.js";
-import { emitNewEvent } from "../notifications/userNotifications.js"
-import { createActivityLogs } from "../utils/activityLogger.js";
-import { buildTaskFilter } from "../utils/taskUtils.js";
-
+import { Subtask } from "../models/taskModels.js";
+import { emitNewEvent } from "../notifications/userNotifications.js";
+import { taskService } from "../services/taskService.js";
+import { buildTaskFilter, isSubTasksDone } from "../utils/taskUtils.js";
 
 export const createTask = async (req, res) => {
     try {
-        const { title, description, status, priority, dueDate, assignee } = req.body;
-
-        const userExists = await User.findById(req.user._id);
-        if (!userExists) {
-            return res.status(404).json({ message: "Assignee not found" });
-        }
-
-        const newTask = new Task({
+        const { title, description, status, priority, dueDate, assignee, labels } =
+            req.body;
+        const userId = req.user._id;
+        const role = req.user.role;
+        const newTask = await taskService.createNewTask({
+            userId,
             title,
             description,
             status,
             priority,
             dueDate,
-            assignee: userExists._id,
-            createdBy: userExists._id,
+            assignee,
+            labels,
+            role
+
         });
-
-        if (req.user.role === "manager" || req.user.role === "admin") {
-            if (assignee) {
-                newTask.assignee = assignee;
-            }
-        }
-
-        await newTask.save();
 
         await emitNewEvent("taskCreated", newTask.assignee, newTask.title);
 
-        res.status(201).json({ message: "Task created successfully", task: newTask });
+        res
+            .status(201)
+            .json({ message: "Task created successfully", task: newTask });
     } catch (error) {
         console.error("create task error:", error);
-        res.status(500).json({ message: "failed to create task" })
+        res.status(500).json({ message: "failed to create task" });
     }
 };
 
 export const getTasks = async (req, res) => {
     try {
-        const { page = 1, limit = 10, status, priority, scope = 'self', search } = req.query;
+        const {
+            page = 1,
+            limit = 10,
+            status,
+            priority,
+            scope = "self",
+            search,
+        } = req.query;
 
         const filter = await buildTaskFilter(req.user, scope, status, priority);
         if (search) {
             filter.$text = { $search: search };
         }
 
-        const tasks = await Task.find(filter).populate("subtasks").limit(limit * 1).skip((page - 1) * limit).exec();
-        const taskCount = await Task.countDocuments(filter);
+        const tasks = await taskService.find(filter, limit, page);
+        const taskCount = await taskService.countDocuments(filter);
 
         return res.status(200).json({
             totalTasks: taskCount,
@@ -61,20 +60,20 @@ export const getTasks = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching tasks:", error);
-        return res.status(500).json({ message: "Failed to fetch tasks" })
+        return res.status(500).json({ message: "Failed to fetch tasks" });
     }
 };
 
 export const getTaskById = async (req, res) => {
     try {
-        const tasks = await Task.findById(req.params.id).populate("subtasks");
-        if (!tasks) {
+        const task = await taskService.findById(req.params.id);
+        if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        return res.status(200).json(tasks);
+        return res.status(200).json(task);
     } catch (error) {
-        return res.status(500).json({ message: "Failed to fetch task" })
+        return res.status(500).json({ message: "Failed to fetch task" });
     }
 };
 
@@ -83,20 +82,25 @@ export const updateTask = async (req, res) => {
         const userRole = req.user.role;
 
         if (req.status === "Done") {
-            const allSubtasksCompleted = await checkSubTasks(req.params.id);
+            const allSubtasksCompleted = await isSubTasksDone(req.params.id);
             if (!allSubtasksCompleted) {
-                return res.status(400).json({ message: "Cannot mark task as 'Done' while subtasks are incomplete." });
+                return res.status(400).json({
+                    message: "Cannot mark task as 'Done' while subtasks are incomplete.",
+                });
             }
         }
 
-        if (userRole === 'user') {
-            if (!req.body.hasOwnProperty('status')) {
-                return res.status(400).json({ message: "Only the 'status' field can be updated, and it must be provided." });
+        if (userRole === "user") {
+            if (!req.body.hasOwnProperty("status")) {
+                return res.status(400).json({
+                    message:
+                        "Only the 'status' field can be updated, and it must be provided.",
+                });
             }
             req.body = { status: req.body.status };
         }
 
-        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, userId: req.user._id });
+        const updatedTask = await taskService.findByIdAndUpdate(req.params.id, req.user._id, req.body);
         if (!updatedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -104,9 +108,15 @@ export const updateTask = async (req, res) => {
         const action = `Updated task: ${JSON.stringify(req.body)}`;
         createActivityLogs(req.user._id, req.params.id, action);
 
-        await emitNewEvent("taskUpdated", updatedTask.assignee, "Task update for title: ${updatedTask.title}");
+        await emitNewEvent(
+            "taskUpdated",
+            updatedTask.assignee,
+            "Task update for title: ${updatedTask.title}"
+        );
 
-        res.status(200).json({ message: "Task updated successfully", task: updatedTask });
+        res
+            .status(200)
+            .json({ message: "Task updated successfully", task: updatedTask });
     } catch (error) {
         res.status(500).json({ message: "Failed to update task", error });
     }
@@ -114,12 +124,16 @@ export const updateTask = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
     try {
-        const deletedTask = await Task.findByIdAndDelete(req.params.id);
+        const deletedTask = await taskService.findByIdAndDelete(req.params.id);
         if (!deletedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        await emitNewEvent("taskDeleted", deletedTask.assignee, "Task title: ${updatedTask.title} is deleted");
+        await emitNewEvent(
+            "taskDeleted",
+            deletedTask.assignee,
+            "Task title: ${updatedTask.title} is deleted"
+        );
 
         const action = `Deleted task: ${JSON.stringify(req.body)}`;
         createActivityLogs(req.user._id, req.params.id, action);
@@ -128,12 +142,12 @@ export const deleteTask = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Failed to delete task", error });
     }
-}
+};
 
 export const assignTask = async (req, res) => {
     try {
         const { newUserId } = req.body;
-        const task = await Task.findById(req.params.id);
+        const task = await taskService.findById(req.params.id);
 
         if (!task) return res.status(404).json({ message: "Task not found" });
 
@@ -147,7 +161,6 @@ export const assignTask = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-
 };
 
 export const createSubtask = async (req, res) => {
@@ -155,12 +168,17 @@ export const createSubtask = async (req, res) => {
         const { id } = req.params;
         const { title, assignedTo } = req.body;
 
-        const task = await Task.findById(id);
+        const task = await taskService.findById(id);
         if (!task) {
             return res.status(404).json({ message: "Parent task not found" });
         }
 
-        const subtask = new Subtask({ title, parentTask: id, assignedTo, createdBy: req.user._id });
+        const subtask = new Subtask({
+            title,
+            parentTask: id,
+            assignedTo,
+            createdBy: req.user._id,
+        });
         await subtask.save();
 
         task.subtasks.push(subtask._id);
@@ -201,14 +219,21 @@ export const updateSubTask = async (req, res) => {
     try {
         const userRole = req.user.role;
 
-        if (userRole === 'user') {
-            if (!req.body.hasOwnProperty('status')) {
-                return res.status(400).json({ message: "Only the 'status' field can be updated, and it must be provided." });
+        if (userRole === "user") {
+            if (!req.body.hasOwnProperty("status")) {
+                return res.status(400).json({
+                    message:
+                        "Only the 'status' field can be updated, and it must be provided.",
+                });
             }
             req.body = { status: req.body.status };
         }
 
-        const updatedSubTask = await Subtask.findByIdAndUpdate(req.params.id, req.body, { new: true, userId: req.user._id });
+        const updatedSubTask = await Subtask.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, userId: req.user._id }
+        );
         if (!updatedSubTask) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -216,7 +241,9 @@ export const updateSubTask = async (req, res) => {
         const action = `Subtask updated : subtaskId :${req.params.id}`;
         createActivityLogs(req.user._id, updatedSubTask.parentTask, action);
 
-        res.status(200).json({ message: "Task updated successfully", task: updatedSubTask });
+        res
+            .status(200)
+            .json({ message: "Task updated successfully", task: updatedSubTask });
     } catch (error) {
         res.status(500).json({ message: "Failed to update task", error });
     }
