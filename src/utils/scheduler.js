@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { emitNewEvent } from "../notifications/userNotifications.js";
+import { emitNewEvent } from "../services/userNotifications.js"
 import { taskService } from "../services/taskService.js";
 
 const checkTaskDeadlines = async () => {

@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema(
         activityLogs: [
             {
                 action: String,
+                taskId: { type: mongoose.Schema.Types.ObjectId, ref: "Task", required: true },
+                subTaskId: { type: mongoose.Schema.Types.ObjectId, ref: "Subtask" },
                 createdAt: { type: Date, default: Date.now }
             }
         ],

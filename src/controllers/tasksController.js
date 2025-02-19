@@ -1,6 +1,6 @@
 import { Subtask } from "../models/taskModels.js";
-import { emitNewEvent } from "../notifications/userNotifications.js";
 import { taskService } from "../services/taskService.js";
+import { emitNewEvent } from "../services/userNotifications.js";
 import { buildTaskFilter, isSubTasksDone } from "../utils/taskUtils.js";
 
 export const createTask = async (req, res) => {
