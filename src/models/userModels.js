@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { TaskSchema } from "./taskModels.js";
 
 const userSchema = new mongoose.Schema(
     {
@@ -7,7 +8,7 @@ const userSchema = new mongoose.Schema(
         password: { type: String, required: true },
         role: { type: String, enum: ['admin', 'manager', 'user'], default: 'user' },
         manager: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-        tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+        tasks: [TaskSchema],
         activityLogs: [
             {
                 action: String,
@@ -18,7 +19,7 @@ const userSchema = new mongoose.Schema(
         ],
         notifications: [
             {
-                type: { type: String, enum: ['task-update', 'message', 'system'], required: true },
+                type: { type: String, enum: ['taskCreated', 'taskUpdated', 'DueDate', 'taskDeleted', 'system'], required: true },
                 message: { type: String, required: true },
                 task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
                 isRead: { type: Boolean, default: false },
