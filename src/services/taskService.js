@@ -38,15 +38,14 @@ const createTaskService = (Task) => {
         return newTask;
     };
 
-    taskService.findWithFilter = async (pipeline, limit = 0, page = 0) => {
-        const tasks = await userService.aggregate(pipeline);
-        if (limit == 0) {
-            return tasks;
+    taskService.findWithFilter = async (pipeline) => {
+        const result = await userService.aggregate(pipeline);
+        if (result.length == 0) {
+            return result;
         }
 
-        const startIndex = (page - 1) * limit;
-        const paginatedTasks = tasks.slice(startIndex, startIndex + limit);
-        const countDocuments = paginatedTasks.length;
+        const paginatedTasks = result[0].tasks
+        const countDocuments = result[0].totalTasks;
 
         return [paginatedTasks, countDocuments];
     };

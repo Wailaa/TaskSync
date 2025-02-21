@@ -35,31 +35,46 @@ export const isSubTasksDone = async (taskId) => {
     return isComplete;
 };
 
-export const buildSearchPipeLine = (filter, search) => {
-    let pipeline = [{ $unwind: "$tasks" },];
-
+export const buildSearchPipeLine = (filter, search, page, limit) => {
+    let pipeline = [{ $unwind: "$tasks" }];
     if (search) {
-
         pipeline.push({
             $match: {
                 $or: [
-                    { "tasks.title": search },
-                    { "tasks.description": search },
+                    { "tasks.title": { $regex: search, $options: "i" } },
+                    { "tasks.description": { $regex: search, $options: "i" } },
                 ],
             },
         });
     }
+    if (filter && Object.keys(filter).length > 0) {
+        pipeline.push({ $match: filter });
+    }
 
-    pipeline.push(
-
-        {
-            $match: filter,
+    pipeline.push({
+        $facet: {
+            metadata: [
+                { $count: "totalTasks" },
+            ],
+            tasks: [
+                { $skip: (page - 1) * limit },
+                { $limit: limit },
+                { $replaceRoot: { newRoot: "$tasks" } },
+            ],
         },
-        { $replaceRoot: { newRoot: "$tasks" } },
-    );
+    });
 
+    pipeline.push({
+        $project: {
+            totalTasks: { $arrayElemAt: ["$metadata.totalTasks", 0] }, // Extract totalTasks from metadata
+            tasks: 1,
+        },
+    });
+
+    console.log(pipeline);
     return pipeline;
-}
+};
+
 export const buildDeuDatePipeLine = () => {
 
     const now = new Date();

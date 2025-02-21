@@ -44,8 +44,8 @@ export const getTasks = async (req, res) => {
         } = req.query;
 
         const filter = await buildTaskFilter(req.user, scope, status, priority);
-        const pipeline = buildSearchPipeLine(filter, search);
-        const [tasks, taskCount] = await taskService.findWithFilter(pipeline, limit, page);
+        const pipeline = buildSearchPipeLine(filter, search, page, limit);
+        const [tasks, taskCount] = await taskService.findWithFilter(pipeline);
 
         return res.status(200).json({
             totalTasks: taskCount,
@@ -95,8 +95,8 @@ export const updateTask = async (req, res) => {
             req.body = { status: req.body.status };
         }
 
-        const updatedTask = await taskService.findByIdAndUpdate(req.params.id, req.user._id, req.body);
-        if (!updatedTask) {
+        const result = await taskService.findByIdAndUpdate(req.params.id, req.body);
+        if (!result) {
             return res.status(404).json({ message: "Task not found" });
         }
 
@@ -105,7 +105,7 @@ export const updateTask = async (req, res) => {
 
         await emitNewEvent(
             "taskUpdated",
-            updatedTask.assignee,
+            result.tasks.assignee,
             "Task update for title: ${updatedTask.title}"
         );
 
