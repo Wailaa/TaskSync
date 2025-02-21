@@ -1,20 +1,13 @@
 import cron from "node-cron";
 import { emitNewEvent } from "../services/userNotifications.js"
 import { taskService } from "../services/taskService.js";
+import { buildDeuDatePipeLine } from "./taskUtils.js";
 
 const checkTaskDeadlines = async () => {
     try {
-        const now = new Date();
-        const upcomingTasks = await taskService
-            .find({
-                dueDate: {
-                    $gte: now,
-                    $lte: new Date(now.getTime() + 24 * 60 * 60 * 1000),
-                },
-                status: { $ne: "Done" },
-            })
+        const pipeline = buildDeuDatePipeLine();
+        const upcomingTasks = await taskService.findWithFilter(pipeline);
 
-        console.log(upcomingTasks);
         if (upcomingTasks) {
             for (const task of upcomingTasks) {
                 const message = `deadline is approaching for "${task.title}"`;

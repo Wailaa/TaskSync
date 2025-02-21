@@ -31,6 +31,10 @@ const createUserService = (User) => {
         return await User.findOne(filter);
     };
 
+    userService.find = async (filter) => {
+        return await User.find(filter);
+    };
+
     userService.findByIdAndUpdate = async (id, filter) => {
         return await User.findByIdAndUpdate(id, filter, { new: true });
     };
@@ -39,6 +43,11 @@ const createUserService = (User) => {
         if (!userId) throw new Error("No userId provided.");
         return await User.findById(userId);
     };
+
+    userService.aggregate = async (pipeline = {}) => {
+        const result = await User.aggregate(pipeline);
+        return result;
+    }
 
     userService.addNotification = async (event, userId, message) => {
         const updateNotification = await User.updateOne(
@@ -67,6 +76,12 @@ const createUserService = (User) => {
         );
         return addNewActivityLog;
     };
+
+    userService.addTask = async (userId, task) => {
+        const user = await userService.getUserById(userId);
+        user.tasks.push(task);
+        user.save();
+    }
 
     return userService;
 };
