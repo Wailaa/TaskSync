@@ -30,4 +30,50 @@ export const isSubTasksDone = async (taskId) => {
 
     const isComplete = subtasks.every(subtask => subtask.status === "Done");
     return isComplete;
+};
+
+export const buildSearchPipeLine = (filter, search) => {
+    let pipeline = [{ $unwind: "$tasks" },];
+
+    if (search) {
+
+        pipeline.push({
+            $match: {
+                $or: [
+                    { "tasks.title": search },
+                    { "tasks.description": search },
+                ],
+            },
+        });
+    }
+
+    pipeline.push(
+
+        {
+            $match: filter,
+        },
+        { $replaceRoot: { newRoot: "$tasks" } },
+    );
+
+    return pipeline;
+}
+export const buildDeuDatePipeLine = () => {
+
+    const now = new Date();
+
+    const pipeline = [
+        { $unwind: "$tasks" },
+        {
+            $match: {
+                "tasks.dueDate": {
+                    $gte: now,
+                    $lte: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+                },
+                "tasks.status": { $ne: "done" },
+            },
+        },
+        { $replaceRoot: { newRoot: "$tasks" } },
+    ];
+
+    return pipeline;
 }

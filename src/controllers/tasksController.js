@@ -1,7 +1,6 @@
-import { Subtask } from "../models/taskModels.js";
 import { taskService } from "../services/taskService.js";
 import { emitNewEvent } from "../services/userNotifications.js";
-import { buildTaskFilter, isSubTasksDone } from "../utils/taskUtils.js";
+import { buildSearchPipeLine, buildTaskFilter, isSubTasksDone } from "../utils/taskUtils.js";
 
 export const createTask = async (req, res) => {
     try {
@@ -45,12 +44,8 @@ export const getTasks = async (req, res) => {
         } = req.query;
 
         const filter = await buildTaskFilter(req.user, scope, status, priority);
-        if (search) {
-            filter.$text = { $search: search };
-        }
-
-        const tasks = await taskService.find(filter, limit, page);
-        const taskCount = await taskService.countDocuments(filter);
+        const pipeline = buildSearchPipeLine(filter, search);
+        const [tasks, taskCount] = await taskService.findWithFilter(pipeline, limit, page);
 
         return res.status(200).json({
             totalTasks: taskCount,
