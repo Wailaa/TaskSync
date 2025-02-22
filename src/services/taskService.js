@@ -51,12 +51,15 @@ const createTaskService = (Task) => {
     };
 
     taskService.findById = async (taskId) => {
-        const task = await Task.findById(taskId);
+        const pipeline = buildFindTaskByIdPipeline(taskId)
+        const task = await userService.aggregate(pipeline);
+
         if (!task) {
             const error = new Error("no task found");
             error.statusCode = 403;
             throw error;
         }
+        return task
     };
 
     taskService.findByIdAndUpdate = async (taskId, userId, filter) => {

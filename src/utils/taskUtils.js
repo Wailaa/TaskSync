@@ -1,12 +1,7 @@
 import User from "../models/userModels.js";
+import { ObjectId } from "mongodb";
 
-export const buildTaskFilter = async (
-    user,
-    scope,
-    status,
-    priority,
-
-) => {
+export const buildTaskFilter = async (user, scope, status, priority) => {
     const { role, _id: userId } = user;
     let filter = {};
 
@@ -66,12 +61,11 @@ export const buildSearchPipeLine = (filter, search, page, limit) => {
 
     pipeline.push({
         $project: {
-            totalTasks: { $arrayElemAt: ["$metadata.totalTasks", 0] }, // Extract totalTasks from metadata
+            totalTasks: { $arrayElemAt: ["$metadata.totalTasks", 0] },
             tasks: 1,
         },
     });
 
-    console.log(pipeline);
     return pipeline;
 };
 
@@ -94,4 +88,29 @@ export const buildDeuDatePipeLine = () => {
     ];
 
     return pipeline;
-}
+};
+
+export const buildFindTaskByIdPipeline = (taskId) => {
+    console.log("Task ID:", taskId);
+    const pipeline = [
+        { $unwind: "$tasks" },
+        {
+            $match: {
+                "tasks._id": new ObjectId(taskId)
+            }
+        },
+        { $replaceRoot: { newRoot: "$tasks" } },
+    ];
+    console.log(pipeline)
+    return pipeline;
+};
+
+
+export const createTaskKeys = (filter) => {
+    const tasksKeys = {};
+    for (const key in filter) {
+        tasksKeys[`tasks.$.${key}`] = filter[key];
+    }
+
+    return tasksKeys;
+};
