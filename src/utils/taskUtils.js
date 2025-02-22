@@ -91,17 +91,16 @@ export const buildDeuDatePipeLine = () => {
 };
 
 export const buildFindTaskByIdPipeline = (taskId) => {
-    console.log("Task ID:", taskId);
+    const ObjectIdTask = ObjectId.createFromHexString(taskId);
     const pipeline = [
         { $unwind: "$tasks" },
         {
             $match: {
-                "tasks._id": new ObjectId(taskId)
+                "tasks._id": ObjectIdTask
             }
         },
         { $replaceRoot: { newRoot: "$tasks" } },
     ];
-    console.log(pipeline)
     return pipeline;
 };
 
@@ -114,3 +113,12 @@ export const createTaskKeys = (filter) => {
 
     return tasksKeys;
 };
+
+export const createDeleteTaskOperator = (taskId) => {
+    const ObjectIdTask = ObjectId.createFromHexString(taskId);
+    return {
+        $pull: {
+            tasks: { _id: ObjectIdTask },
+        },
+    };
+}

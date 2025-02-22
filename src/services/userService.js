@@ -44,6 +44,10 @@ const createUserService = (User) => {
         return await User.findById(userId);
     };
 
+    userService.updateOne = async (target, updateContent) => {
+        return await User.findOneAndUpdate(target, { $set: updateContent });
+    }
+
     userService.aggregate = async (pipeline = {}) => {
         const result = await User.aggregate(pipeline);
         return result;

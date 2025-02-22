@@ -1,5 +1,6 @@
 import { userService } from "./userService.js";
 import { TaskSchema } from "../models/taskModels.js";
+import { buildFindTaskByIdPipeline, createTaskKeys } from "../utils/taskUtils.js";
 
 const createTaskService = (Task) => {
     const taskService = {};
@@ -51,7 +52,7 @@ const createTaskService = (Task) => {
     };
 
     taskService.findById = async (taskId) => {
-        const pipeline = buildFindTaskByIdPipeline(taskId)
+        const pipeline = buildFindTaskByIdPipeline(taskId);
         const task = await userService.aggregate(pipeline);
 
         if (!task) {
@@ -59,19 +60,23 @@ const createTaskService = (Task) => {
             error.statusCode = 403;
             throw error;
         }
-        return task
+        return task[0];
     };
 
-    taskService.findByIdAndUpdate = async (taskId, userId, filter) => {
-        const updatedTask = await Task.findByIdAndUpdate(taskId, filter, {
-            new: true,
-            userId,
-        });
+    taskService.findByIdAndUpdate = async (taskId, filter) => {
+        const updatedFields = createTaskKeys(filter)
+
+        const updatedTask = await userService.updateOne({
+            'tasks._id': taskId
+        }, updatedFields);
+
         return updatedTask;
+
     };
 
     taskService.findByIdAndDelete = async (taskId) => {
-        const deletedTask = await Task.findByIdAndDelete(taskId);
+        const deleteOperator = createDeleteTaskOperator(taskId);
+        const deletedTask = await userService.updateOne(deleteOperator);
         return deletedTask;
     };
 
