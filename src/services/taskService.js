@@ -87,6 +87,18 @@ const createTaskService = (Task) => {
         return allTasks;
     };
 
+    taskService.assignUserToTask = async (newUserId, task) => {
+        const currentAssignedUser = await userService.getUserById(task.assignee);
+        const NewAssignedUser = await userService.getUserById(newUserId);
+
+        task.assignee = newUserId;
+        NewAssignedUser.tasks.push(task);
+        currentAssignedUser.tasks = currentAssignedUser.tasks.filter((currentTask) => !currentTask._id.equals(task._id));
+
+        await NewAssignedUser.save();
+        await currentAssignedUser.save();
+    };
+
     return taskService;
 };
 

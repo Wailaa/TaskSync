@@ -152,11 +152,11 @@ export const assignTask = async (req, res) => {
         const { newUserId } = req.body;
         const task = await taskService.findById(req.params.id);
 
-
         if (!task) return res.status(404).json({ message: "Task not found" });
+        if (newUserId == task.assignee) return res.status(400).json({ message: "Task already assigned to user" });
 
-        const result = await taskService.findByIdAndUpdate(req.params.id, { assignee: newUserId });
-        console.log(result);
+        await taskService.assignUserToTask(newUserId, task);
+
         const action = `New user Assigned: ${newUserId}`;
         userService.addActivityLog(req.user._id, { taskId: req.params.id, action });
 
