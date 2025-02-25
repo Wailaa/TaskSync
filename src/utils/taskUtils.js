@@ -127,8 +127,8 @@ export const createSubTaskKeys = (filter) => {
 export const createDeleteTaskOperator = (taskId) => {
     const ObjectIdTask = ObjectId.createFromHexString(taskId);
     return {
-        $pull: {
-            tasks: { _id: ObjectIdTask },
-        },
-    };
+
+        tasks: { _id: ObjectIdTask },
+
+    }
 }

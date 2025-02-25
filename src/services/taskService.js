@@ -20,6 +20,7 @@ const createTaskService = (Task) => {
         if (!userExists) {
             return res.status(404).json({ message: "Assignee not found" });
         }
+
         const newTask = {
             title,
             description,
@@ -67,18 +68,25 @@ const createTaskService = (Task) => {
     taskService.findByIdAndUpdate = async (taskId, filter) => {
         const updatedFields = createTaskKeys(filter)
 
-        const updatedTask = await userService.updateOne({
+        const updatedTask = await userService.findOneAndUpdate({
             'tasks._id': taskId
-        }, updatedFields);
+        },
+            { $set: updatedFields }
+        );
 
         return updatedTask;
 
     };
 
     taskService.findByIdAndDelete = async (taskId) => {
-        const deleteOperator = createDeleteTaskOperator(taskId);
-        const deletedTask = await userService.updateOne(deleteOperator);
-        return deletedTask;
+        try {
+            const deleteOperator = createDeleteTaskOperator(taskId);
+            const deletedTask = await userService.findOneAndUpdate({ "tasks._id": taskId }, { $pull: deleteOperator });
+            return deletedTask;
+        } catch (error) {
+            console.log(error)
+            return error
+        }
     };
 
     taskService.getAllTasks = async (userId = {}) => {
@@ -104,18 +112,18 @@ const createTaskService = (Task) => {
         const createSubtak = await userService.addSubTask(taskId, newSubtask)
         return createSubtak;
     };
-    taskService.updateSubTask = async (userId, taskId, subtaskId, newSubtask) => {
 
+    taskService.updateSubTask = async (userId, taskId, subtaskId, newSubtask) => {
         try {
             taskId = ObjectId.createFromHexString(taskId);
             subtaskId = ObjectId.createFromHexString(subtaskId);
+
             const setFields = createSubTaskKeys(newSubtask);
-            console.log('setField', setFields);
             const updateSubtak = await userService.updateSubTask(userId, taskId, subtaskId, setFields);
+
             return updateSubtak;
         } catch (error) {
             console.log(error);
-
         }
 
     };

@@ -116,7 +116,7 @@ export const updateTask = async (req, res) => {
         await emitNewEvent(
             "taskUpdated",
             task.assignee,
-            "Task update for title: ${updatedTask.title}"
+            `Task update for title: ${task.title}`
         );
 
         res.status(200).json({ message: "Task updated successfully" });
@@ -127,15 +127,17 @@ export const updateTask = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
     try {
-        const deletedTask = await taskService.findByIdAndDelete(req.params.taskId);
-        if (!deletedTask) {
+        const task = await taskService.findById(req.params.taskId);
+        if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
 
+        await taskService.findByIdAndDelete(req.params.taskId);
+
         await emitNewEvent(
             "taskDeleted",
-            deletedTask.assignee,
-            "Task title: ${updatedTask.title} is deleted"
+            task.assignee,
+            `Task title: ${updatedTask.title} is deleted`
         );
 
         const action = `Deleted task: ${JSON.stringify(req.body)}`;
@@ -208,7 +210,7 @@ export const updateSubTask = async (req, res) => {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        const action = `Subtask updated : subtaskId :${req.params.id}`;
+        const action = `Subtask updated : subtaskId :${req.params.subtaskId}`;
         userService.addActivityLog(req.user._id, { taskId: updatedSubTask.parentTask, action });
 
         res.status(200).json({ message: "Task updated successfully", task: updatedSubTask });
