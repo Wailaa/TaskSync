@@ -44,77 +44,63 @@ const createUserService = (User) => {
         return await User.findById(userId);
     };
 
-    userService.updateOne = async (target, updateContent) => {
-        return await User.findOneAndUpdate(target, { $set: updateContent });
-    }
+    userService.findOneAndUpdate = async (target, updateContent) => {
+        return await User.findOneAndUpdate(target, updateContent);
+    };
 
     userService.aggregate = async (pipeline = {}) => {
         const result = await User.aggregate(pipeline);
         return result;
-    }
+    };
 
     userService.addNotification = async (event, userId, message) => {
-        const updateNotification = await User.updateOne(
-            { _id: userId },
-            {
-                $push: {
-                    notifications: {
-                        type: event,
-                        message: message,
-                        isRead: false,
-                    },
-                },
-            }
-        );
-        return updateNotification;
+        const user = await userService.getUserById(userId);
+        const updateNotification = {
+            type: event,
+            message: message,
+            isRead: false,
+        };
+
+        user.notifications.push(updateNotification);
+        user.save();
     };
 
     userService.addActivityLog = async (userId, filter) => {
-        const addNewActivityLog = await User.updateOne(
-            { _id: userId },
-            {
-                $push: {
-                    activityLogs: filter
-                },
-            }
-        );
-        return addNewActivityLog;
+        const user = await userService.getUserById(userId);
+        user.activityLogs.push(filter);
+        user.save();
     };
 
     userService.addTask = async (userId, task) => {
         const user = await userService.getUserById(userId);
         user.tasks.push(task);
         user.save();
-    }
+    };
     userService.addSubTask = async (taskId, subtask) => {
-        const addNewSubtask = await User.updateOne(
+        return await User.updateOne(
             { "tasks._id": taskId },
             {
                 $push: {
-                    "tasks.$.subtasks": subtask
+                    "tasks.$.subtasks": subtask,
                 },
             }
         );
-        return addNewSubtask;
-    }
+    };
     userService.updateSubTask = async (userId, taskId, subtaskId, subtask) => {
-        const addNewSubtask = await User.updateOne(
+        return await User.updateOne(
             {
                 _id: userId,
                 "tasks._id": taskId,
             },
             {
-                $set: subtask
+                $set: subtask,
             },
             {
-                arrayFilters: [
-                    { "subtasks._id": subtaskId }
-                ]
+                arrayFilters: [{ "subtasks._id": subtaskId }],
             }
         );
 
-        return addNewSubtask;
-    }
+    };
 
     return userService;
 };
