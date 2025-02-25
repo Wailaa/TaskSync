@@ -62,7 +62,7 @@ export const getTasks = async (req, res) => {
 
 export const getTaskById = async (req, res) => {
     try {
-        const task = await taskService.findById(req.params.id);
+        const task = await taskService.findById(req.params.taskId);
         if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -77,7 +77,7 @@ export const getTaskById = async (req, res) => {
 export const updateTask = async (req, res) => {
     try {
         const userRole = req.user.role;
-        const taskId = req.params.id;
+        const taskId = req.params.taskId;
         let requestBody = req.body;
         const task = await taskService.findById(taskId);
 
@@ -127,7 +127,7 @@ export const updateTask = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
     try {
-        const deletedTask = await taskService.findByIdAndDelete(req.params.id);
+        const deletedTask = await taskService.findByIdAndDelete(req.params.taskId);
         if (!deletedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -139,7 +139,7 @@ export const deleteTask = async (req, res) => {
         );
 
         const action = `Deleted task: ${JSON.stringify(req.body)}`;
-        userService.addActivityLog(req.user._id, { taskId: req.params.id, action });
+        userService.addActivityLog(req.user._id, { taskId: req.params.taskId, action });
 
         res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
@@ -150,7 +150,7 @@ export const deleteTask = async (req, res) => {
 export const assignTask = async (req, res) => {
     try {
         const { newUserId } = req.body;
-        const task = await taskService.findById(req.params.id);
+        const task = await taskService.findById(req.params.taskId);
 
         if (!task) return res.status(404).json({ message: "Task not found" });
         if (newUserId == task.assignee) return res.status(400).json({ message: "Task already assigned to user" });
@@ -158,7 +158,7 @@ export const assignTask = async (req, res) => {
         await taskService.assignUserToTask(newUserId, task);
 
         const action = `New user Assigned: ${newUserId}`;
-        userService.addActivityLog(req.user._id, { taskId: req.params.id, action });
+        userService.addActivityLog(req.user._id, { taskId: req.params.taskId, action });
 
         res.json({ message: "Task reassigned successfully", task });
     } catch (error) {
@@ -168,7 +168,7 @@ export const assignTask = async (req, res) => {
 
 export const createSubtask = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params.taskId;
         const { title, status } = req.body;
         const subtask = {
             title,
@@ -180,33 +180,11 @@ export const createSubtask = async (req, res) => {
         const createSubtask = await taskService.createSubTask(id, subtask);
         const action = `Subtask created task: ${JSON.stringify(req.body)}`;
 
-        userService.addActivityLog(req.user._id, { taskId: req.params.id, action });
+        userService.addActivityLog(req.user._id, { taskId: req.params.taskId, action });
 
         return res.status(201).json({ message: "Subtask created", createSubtask });
     } catch (error) {
         res.status(500).json({ message: "Error creating subtask" });
-    }
-};
-
-export const assignSubtaskToUser = async (req, res) => {
-    try {
-        const { subtaskId } = req.params;
-        const { userId } = req.body;
-
-        const subtask = await Subtask.findById(subtaskId);
-        if (!subtask) {
-            return res.status(404).json({ message: "Subtask not found" });
-        }
-
-        subtask.assignedTo = userId;
-        await subtask.save();
-
-        const action = `Subtask assigned : for userId ${userId} ,subtaskId :${subtaskId}`;
-        userService.addActivityLog(req.user._id, { taskId: subtask.parentTask, action });
-
-        return res.status(200).json({ message: "Subtask assigned", subtask });
-    } catch (error) {
-        res.status(500).json({ message: "Error assigning subtask" });
     }
 };
 
@@ -224,11 +202,8 @@ export const updateSubTask = async (req, res) => {
             req.body = { status: req.body.status };
         }
 
-        const updatedSubTask = await Subtask.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, userId: req.user._id }
-        );
+        const updatedSubTask = await taskService.updateSubTask(req.user._id, req.params.taskId, req.params.subtaskId, req.body)
+
         if (!updatedSubTask) {
             return res.status(404).json({ message: "Task not found" });
         }
@@ -236,9 +211,7 @@ export const updateSubTask = async (req, res) => {
         const action = `Subtask updated : subtaskId :${req.params.id}`;
         userService.addActivityLog(req.user._id, { taskId: updatedSubTask.parentTask, action });
 
-        res
-            .status(200)
-            .json({ message: "Task updated successfully", task: updatedSubTask });
+        res.status(200).json({ message: "Task updated successfully", task: updatedSubTask });
     } catch (error) {
         res.status(500).json({ message: "Failed to update task", error });
     }
