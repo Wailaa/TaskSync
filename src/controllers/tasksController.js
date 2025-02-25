@@ -169,28 +169,20 @@ export const assignTask = async (req, res) => {
 export const createSubtask = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, assignedTo } = req.body;
-
-        const task = await taskService.findById(id);
-        if (!task) {
-            return res.status(404).json({ message: "Parent task not found" });
-        }
-
-        const subtask = new Subtask({
+        const { title, status } = req.body;
+        const subtask = {
             title,
+            status,
             parentTask: id,
-            assignedTo,
             createdBy: req.user._id,
-        });
-        await subtask.save();
+        };
 
-        task.subtasks.push(subtask._id);
-        await task.save();
-
+        const createSubtask = await taskService.createSubTask(id, subtask);
         const action = `Subtask created task: ${JSON.stringify(req.body)}`;
+
         userService.addActivityLog(req.user._id, { taskId: req.params.id, action });
 
-        return res.status(201).json({ message: "Subtask created", subtask });
+        return res.status(201).json({ message: "Subtask created", createSubtask });
     } catch (error) {
         res.status(500).json({ message: "Error creating subtask" });
     }

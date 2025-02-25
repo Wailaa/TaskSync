@@ -99,6 +99,11 @@ const createTaskService = (Task) => {
         await currentAssignedUser.save();
     };
 
+    taskService.createSubTask = async (taskId, newSubtask) => {
+        const createSubtak = await userService.addSubTask(taskId, newSubtask)
+        return createSubtak;
+    };
+
     return taskService;
 };
 

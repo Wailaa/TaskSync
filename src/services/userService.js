@@ -86,6 +86,17 @@ const createUserService = (User) => {
         user.tasks.push(task);
         user.save();
     }
+    userService.addSubTask = async (taskId, subtask) => {
+        const addNewSubtask = await User.updateOne(
+            { "tasks._id": taskId },
+            {
+                $push: {
+                    "tasks.$.subtasks": subtask
+                },
+            }
+        );
+        return addNewSubtask;
+    }
 
     return userService;
 };
