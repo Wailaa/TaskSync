@@ -114,6 +114,16 @@ export const createTaskKeys = (filter) => {
     return tasksKeys;
 };
 
+export const createSubTaskKeys = (filter) => {
+
+    const subTasksKeys = {};
+    for (const key in filter) {
+        subTasksKeys[`tasks.$.subtasks.$[subtasks].${key}`] = filter[key];
+    }
+
+    return subTasksKeys;
+};
+
 export const createDeleteTaskOperator = (taskId) => {
     const ObjectIdTask = ObjectId.createFromHexString(taskId);
     return {

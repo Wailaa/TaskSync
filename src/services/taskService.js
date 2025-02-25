@@ -1,6 +1,7 @@
 import { userService } from "./userService.js";
 import { TaskSchema } from "../models/taskModels.js";
-import { buildFindTaskByIdPipeline, createTaskKeys } from "../utils/taskUtils.js";
+import { ObjectId } from "mongodb";
+import { buildFindTaskByIdPipeline, createDeleteTaskOperator, createSubTaskKeys, createTaskKeys } from "../utils/taskUtils.js";
 
 const createTaskService = (Task) => {
     const taskService = {};
@@ -102,6 +103,21 @@ const createTaskService = (Task) => {
     taskService.createSubTask = async (taskId, newSubtask) => {
         const createSubtak = await userService.addSubTask(taskId, newSubtask)
         return createSubtak;
+    };
+    taskService.updateSubTask = async (userId, taskId, subtaskId, newSubtask) => {
+
+        try {
+            taskId = ObjectId.createFromHexString(taskId);
+            subtaskId = ObjectId.createFromHexString(subtaskId);
+            const setFields = createSubTaskKeys(newSubtask);
+            console.log('setField', setFields);
+            const updateSubtak = await userService.updateSubTask(userId, taskId, subtaskId, setFields);
+            return updateSubtak;
+        } catch (error) {
+            console.log(error);
+
+        }
+
     };
 
     return taskService;
