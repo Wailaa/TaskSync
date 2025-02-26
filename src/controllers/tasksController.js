@@ -170,8 +170,10 @@ export const assignTask = async (req, res) => {
 
 export const addTaskComment = async (req, res) => {
     try {
+        const userId = req.user._id;
         const taskId = req.params.taskId;
         const comment = req.body;
+        comment.userId = userId;
 
         await taskService.addTaskComment(taskId, comment);
         res.json({ message: "Comment added successfully" });
@@ -237,7 +239,8 @@ export const createSubtaskComment = async (req, res) => {
         const taskId = req.params.taskId;
         const subtasId = req.params.subtaskId;
         const comment = req.body;
-        console.log('comment', comment);
+        comment.userId = userId;
+
         await taskService.addSubtaskComment(userId, taskId, subtasId, comment);
         res.status(200).json({ message: "Comment added successfully" });
     } catch (error) {
