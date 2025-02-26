@@ -1,7 +1,7 @@
 import { taskService } from "../services/taskService.js";
 import { emitNewEvent } from "../services/userNotifications.js";
 import { userService } from "../services/userService.js";
-import { buildSearchPipeLine, buildTaskFilter, isSubTasksDone } from "../utils/taskUtils.js";
+import { buildSearchPipeLine, buildTaskFilter } from "../utils/taskUtils.js";
 
 export const createTask = async (req, res) => {
     try {
@@ -86,13 +86,13 @@ export const updateTask = async (req, res) => {
                 message: "could not find task",
             });
         }
-        if (req.status === "Done") {
-            const allSubtasksCompleted = await isSubTasksDone(taskId);
-            if (!allSubtasksCompleted) {
-                return res.status(400).json({
-                    message: "Cannot mark task as 'Done' while subtasks are incomplete.",
-                });
-            }
+
+        const allSubtasksCompleted = await taskService.IsSubtasksDone(taskId);
+
+        if (req.body.status == "done" && !allSubtasksCompleted) {
+            return res.status(400).json({
+                message: "Cannot mark task as 'Done' while subtasks are incomplete.",
+            });
         }
 
         if (userRole === "user") {
@@ -170,7 +170,7 @@ export const assignTask = async (req, res) => {
 
 export const createSubtask = async (req, res) => {
     try {
-        const { id } = req.params.taskId;
+        const id = req.params.taskId;
         const { title, status } = req.body;
         const subtask = {
             title,
