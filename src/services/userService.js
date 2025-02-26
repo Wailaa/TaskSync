@@ -76,8 +76,16 @@ const createUserService = (User) => {
         user.tasks.push(task);
         user.save();
     };
+
+    userService.updateOne = async (filter, update, arrayFilters = []) => {
+        if (arrayFilters.length == 0) {
+            return await User.updateOne(filter, update);
+        }
+        return await User.updateOne(filter, update, arrayFilters);
+    };
+
     userService.addSubTask = async (taskId, subtask) => {
-        return await User.updateOne(
+        return await userService.updateOne(
             { "tasks._id": taskId },
             {
                 $push: {
@@ -86,8 +94,9 @@ const createUserService = (User) => {
             }
         );
     };
+
     userService.updateSubTask = async (userId, taskId, subtaskId, subtask) => {
-        return await User.updateOne(
+        return await userService.updateOne(
             {
                 _id: userId,
                 "tasks._id": taskId,
@@ -104,7 +113,7 @@ const createUserService = (User) => {
 
     userService.addComment = async (taskId, comment) => {
 
-        return await User.updateOne(
+        return await userService.updateOne(
             { "tasks._id": taskId },
             {
                 $push: {
@@ -116,7 +125,7 @@ const createUserService = (User) => {
 
     userService.addSubtaskComment = async (userId, taskId, subtaskId, comment) => {
 
-        return await User.updateOne(
+        return await userService.updateOne(
             {
                 _id: userId,
                 "tasks._id": taskId
