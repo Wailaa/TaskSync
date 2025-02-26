@@ -1,5 +1,6 @@
 import { userService } from "./userService.js";
 import { TaskSchema } from "../models/taskModels.js";
+import { ObjectId } from "mongodb";
 import { buildFindTaskByIdPipeline, createDeleteTaskOperator, createSubTaskKeys, createTaskKeys } from "../utils/taskUtils.js";
 
 const createTaskService = (Task) => {
@@ -95,6 +96,10 @@ const createTaskService = (Task) => {
         return allTasks;
     };
 
+    taskService.addTaskComment = async (taskId, comment) => {
+        return await userService.addComment(taskId, comment);
+    }
+
     taskService.assignUserToTask = async (newUserId, task) => {
         const currentAssignedUser = await userService.getUserById(task.assignee);
         const NewAssignedUser = await userService.getUserById(newUserId);
@@ -137,6 +142,10 @@ const createTaskService = (Task) => {
         return subtasks.every(subtask => subtask.status === 'done');
 
     }
+
+    taskService.addSubtaskComment = async (userId, taskId, subtasId, comment) => {
+        return await userService.addSubtaskComment(userId, taskId, subtasId, comment);
+    };
 
     return taskService;
 };

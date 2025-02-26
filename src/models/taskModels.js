@@ -16,7 +16,7 @@ export const subtaskSchema = new mongoose.Schema(
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         comments: [
             {
-                user: {
+                userId: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "User",
                     required: true,
@@ -53,7 +53,7 @@ export const TaskSchema = new mongoose.Schema(
         subtasks: [subtaskSchema],
         comments: [
             {
-                user: {
+                userId: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "User",
                     required: true,

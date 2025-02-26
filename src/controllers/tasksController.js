@@ -168,6 +168,18 @@ export const assignTask = async (req, res) => {
     }
 };
 
+export const addTaskComment = async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const comment = req.body;
+
+        await taskService.addTaskComment(taskId, comment);
+        res.json({ message: "Comment added successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 export const createSubtask = async (req, res) => {
     try {
         const id = req.params.taskId;
@@ -211,10 +223,24 @@ export const updateSubTask = async (req, res) => {
         }
 
         const action = `Subtask updated : subtaskId :${req.params.subtaskId}`;
-        userService.addActivityLog(req.user._id, { taskId: updatedSubTask.parentTask, action });
+        userService.addActivityLog(req.user._id, { taskId: req.params.taskId, action });
 
         res.status(200).json({ message: "Task updated successfully", task: updatedSubTask });
     } catch (error) {
         res.status(500).json({ message: "Failed to update task", error });
+    }
+};
+
+export const createSubtaskComment = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const taskId = req.params.taskId;
+        const subtasId = req.params.subtaskId;
+        const comment = req.body;
+        console.log('comment', comment);
+        await taskService.addSubtaskComment(userId, taskId, subtasId, comment);
+        res.status(200).json({ message: "Comment added successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

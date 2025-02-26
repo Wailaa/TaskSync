@@ -102,6 +102,37 @@ const createUserService = (User) => {
 
     };
 
+    userService.addComment = async (taskId, comment) => {
+
+        return await User.updateOne(
+            { "tasks._id": taskId },
+            {
+                $push: {
+                    "tasks.$.comments": comment,
+                },
+            }
+        );
+    };
+
+    userService.addSubtaskComment = async (userId, taskId, subtaskId, comment) => {
+        
+        return await User.updateOne(
+            {
+                _id: userId,
+                "tasks._id": taskId
+            },
+            {
+                $push: {
+                    "tasks.$.subtasks.$[subtask].comments": comment
+                }
+            },
+            {
+                arrayFilters: [{ "subtask._id": subtaskId }]
+            }
+        );
+    };
+
+
     return userService;
 };
 
