@@ -242,6 +242,28 @@ Authorization: Bearer <your_access_token>
 
 ---
 
+### Comment Task
+
+**POST** `/api/tasks/{taskId}/comment`
+
+**Description:** post a comment on a task by its ID.
+
+**Headers:**
+
+```
+Authorization: Bearer <your_access_token>
+```
+
+**Request Body:**
+
+```
+{
+    "content": "some_content_here"
+}
+```
+
+---
+
 ## Subtask Management
 
 ### Create Subtask
@@ -268,31 +290,9 @@ Authorization: Bearer <your_access_token>
 
 ---
 
-### Assign Subtask
-
-**PUT** `/api/tasks/subtasks/:subtaskId/assign`
-
-**Description:** assign a subtask to a user.only by admin or manager.
-
-**Headers:**
-
-```
-Authorization: Bearer <your_access_token>
-```
-
-**Request Body:**
-
-```
-{
-    "userId":"some_user_id",
-}
-```
-
----
-
 ### Update Subtask
 
-**PUT** `/api/tasks/subtasks/:subtaskId`
+**PUT** `/api/tasks/:taskId/subtasks/:subtaskId`
 
 **Description:** update a subtask.
 
@@ -307,9 +307,41 @@ Authorization: Bearer <your_access_token>
 ```
 {
     "title":"subtask title",
-    "assignedTo":"some_user_id",
     "status": "subtask-status"
 }
 ```
+
+**Query Parameters:**
+
+- `title`: string
+- `status`:`pending`, `in-progress`, `done`
+
+---
+
+### Comment Subtask
+
+**POST** `/api/tasks/:taskId/subtasks/:subtaskId`
+
+**Description:** comment a subtask.
+
+**Headers:**
+
+```
+Authorization: Bearer <your_access_token>
+```
+
+**Request Body:**
+
+```
+{
+    "title":"subtask title",
+    "status": "subtask-status"
+}
+```
+
+**Query Parameters:**
+
+- `title`: string
+- `status`:`pending`, `in-progress`, `done`
 
 ---
