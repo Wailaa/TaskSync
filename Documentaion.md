@@ -130,8 +130,9 @@ status: 200
 }
 ```
 
+**Error Responses**
+
 status: 400
-**Error Responses:**
 
 ```
 {
@@ -203,8 +204,8 @@ Authorization: Bearer <your_access_token>
 
 - `scope`: `self` (user's own tasks) or `team` (team tasks-manager role.)
 - `page`: Page number
-- `status`: `Low`, `Medium`, `High`
-- `priority`: `To-Do`, `In-Progress`, `Done`
+- `status`: `to-do`, `in-progress`, `done`,
+- `priority`: `low`, `medium`, `high`,
 - `search`: free text to search in title and description of a task
 
 **Response:**
@@ -282,11 +283,31 @@ Authorization: Bearer <your_access_token>
 Authorization: Bearer <your_access_token>
 ```
 
+**Response:**
+
+status: 200:
+
+```
+{
+{ message: "Task deleted successfully" }
+}
+```
+
+**Error Responses**
+
+status: 500:
+
+```
+{
+{ message: "Failed to delete task", error : some_error_message }
+}
+```
+
 ---
 
 ### Assign Task
 
-**PUT** `/api/tasks/{taskId}`
+**PUT** `/api/tasks/{taskId}/assign`
 
 **Description:** assign a task by its ID to a user, the userId is in the boy request . only admin can delete a task
 
@@ -306,7 +327,7 @@ Authorization: Bearer <your_access_token>
 
 ---
 
-### Comment Task
+### Add Comment to Task
 
 **POST** `/api/tasks/{taskId}/comment`
 
@@ -323,6 +344,40 @@ Authorization: Bearer <your_access_token>
 ```
 {
     "content": "some_content_here"
+}
+```
+
+---
+
+### get Comments of a Task
+
+**GET** `/api/tasks/{taskId}/comment`
+
+**Description:** This endpoint retrieves all comments for a task by its taskId .
+
+**Headers:**
+
+```
+Authorization: Bearer <your_access_token>
+```
+
+**Response:**
+
+status: 200:
+
+```
+{
+{ message: "Comments found", comments: [{comment1},{comment2}] }
+}
+```
+
+**Error Responses**
+
+status: 500:
+
+```
+{
+    "message": "some_error_message",
 }
 ```
 
@@ -347,8 +402,30 @@ Authorization: Bearer <your_access_token>
 ```
 {
     "title":"subtask title",
-    "assignedTo":"some_user_id",
     "status": "subtask-status"
+}
+```
+
+**Response:**
+
+status: 200:
+
+```
+{
+"message": "Subtask created",
+    "createSubtask": {
+        // ...subtask object as returned by taskService.createSubTask
+    }
+}
+```
+
+**Error Responses**
+
+status: 500:
+
+```
+{
+    "message": "Error creating subtask",
 }
 ```
 
@@ -384,9 +461,9 @@ Authorization: Bearer <your_access_token>
 
 ### Comment Subtask
 
-**POST** `/api/tasks/:taskId/subtasks/:subtaskId`
+**POST** `/api/tasks/:taskId/subtasks/:subtaskId/comment`
 
-**Description:** comment a subtask.
+**Description:** Add a comment to a subtask.
 
 **Headers:**
 
@@ -398,8 +475,7 @@ Authorization: Bearer <your_access_token>
 
 ```
 {
-    "title":"subtask title",
-    "status": "subtask-status"
+{ "content": "comment text" }
 }
 ```
 

@@ -187,7 +187,7 @@ export const getTaskComment = async (req, res) => {
         const taskId = req.params.taskId;
 
         const result = await taskService.getTaskComment(taskId);
-        res.json({ message: "Comment added successfully", comments: result });
+        res.json({ message: "Comments found", comments: result });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -205,7 +205,7 @@ export const createSubtask = async (req, res) => {
         };
 
         const createSubtask = await taskService.createSubTask(id, subtask);
-        const action = `Subtask created task: ${JSON.stringify(req.body)}`;
+        const action = `Subtask created: ${JSON.stringify(req.body)}`;
 
         userService.addActivityLog(req.user._id, { taskId: req.params.taskId, action });
 
