@@ -71,15 +71,18 @@ TaskSync is a feature-rich task management system that provides authentication, 
 
 - Create a .env file in the project root with the following environment variables:
   ```sh
-  PORT=3000
+  PORT=8080
   MONGO_URI=your_mongodb_connection_string
   JWT_SECRET=your_jwt_secret_key
   JWT_ACCESS_EXPIRES=1h
   JWT_REFRESH_EXPIRES=7d
-  URI_ORIGIN1=http://localhost:3000
+  URI_ORIGIN1=http://localhost:8080
   URI_ORIGIN2=http://127.0.0.1:5500
   ```
 - Run application :
+
   ```sh
   npm run dev
   ```
+
+- Visit http://localhost:8080 to access the website
