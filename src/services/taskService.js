@@ -100,6 +100,12 @@ const createTaskService = (Task) => {
         return await userService.addComment(taskId, comment);
     }
 
+    taskService.getTaskComment = async (taskId) => {
+        const result = await taskService.findById(taskId);
+        const comments = result.comments;
+        return comments;
+    }
+
     taskService.assignUserToTask = async (newUserId, task) => {
         const currentAssignedUser = await userService.getUserById(task.assignee);
         const NewAssignedUser = await userService.getUserById(newUserId);

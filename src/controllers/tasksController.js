@@ -181,6 +181,17 @@ export const addTaskComment = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+export const getTaskComment = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const taskId = req.params.taskId;
+
+        const result = await taskService.getTaskComment(taskId);
+        res.json({ message: "Comment added successfully", comments: result });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
 export const createSubtask = async (req, res) => {
     try {
