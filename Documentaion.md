@@ -27,6 +27,32 @@
 }
 ```
 
+**Error Responses**
+
+status: 400
+
+```
+{
+    message: "Username and password are required" ,
+}
+```
+
+status 401:
+
+```
+{
+    "message": "Invalid username or password"
+}
+```
+
+status 500:
+
+```
+{
+   message: "Internal Server error"
+}
+```
+
 ---
 
 ### Logout
@@ -49,6 +75,41 @@ Authorization: Bearer <your_access_token>
 }
 ```
 
+**Response:**
+status 200:
+
+```
+{
+  message: message: "logged out successfully"
+}
+```
+
+**Error Responses**
+
+status: 400
+
+```
+{
+    message: "Refresh token required",
+}
+```
+
+status 401:
+
+```
+{
+    message: "Token required",
+}
+```
+
+status 500:
+
+```
+{
+  message: "Server error"
+}
+```
+
 ---
 
 ### Register
@@ -65,6 +126,25 @@ Authorization: Bearer <your_access_token>
     "password": "some_password",
     "email": "some-email@example.com",
     "role": "user"
+}
+```
+
+**Response:**
+status 200:
+
+```
+{
+  message: "User registered successfully"
+}
+```
+
+**Error Responses**
+
+status 500:
+
+```
+{
+  message: "Server error"
 }
 ```
 
@@ -90,6 +170,25 @@ Authorization: Bearer <your_access_token>
 {
     "message": "new access token",
     "accessToken": "new_JWT_token"
+}
+```
+
+**Error Responses**
+
+status: 400
+
+```
+{
+    message: "Refresh token required",
+}
+```
+
+status 401:
+
+```
+{
+    message: "expired token" ,
+    //or message: "invalid token" ,
 }
 ```
 
@@ -121,11 +220,12 @@ status: 200
 
 ```
 {
-    "message": "User role updated successfully",
+
     "user": {
         "id": "user_id",
         "username": "username",
         "role": "new_role"
+        ...
     }
 }
 ```
@@ -136,15 +236,7 @@ status: 400
 
 ```
 {
-    "message": "Invalid role",
-}
-```
-
-status 403:
-
-```
-{
-    "message": "Not authorized (non-admin user)",
+    "error": "Invalid role",
 }
 ```
 
@@ -152,11 +244,9 @@ status 404:
 
 ```
 {
-    "message": "User not found",
+    "error": "User not found",
 }
 ```
-
-User not found
 
 ---
 
@@ -183,6 +273,28 @@ Authorization: Bearer <your_access_token>
     "status": "To-Do",
     "priority": "High",
     "dueDate": "2025-02-05"
+}
+```
+
+**Responses:**
+
+status: 200
+
+```
+{
+  "message": "Task created successfully",
+  "task": { ... }
+}
+
+```
+
+**Error Responses**
+
+status 500:
+
+```
+{
+    message: "failed to create task",
 }
 ```
 
@@ -242,6 +354,34 @@ Authorization: Bearer <your_access_token>
 Authorization: Bearer <your_access_token>
 ```
 
+**Responses:**
+
+status 200:
+
+```
+{
+    "task": {....}
+}
+```
+
+**Error Responses**
+
+status 404:
+
+```
+{
+   message: "Task not found" ,
+}
+```
+
+status 500:
+
+```
+{
+    message: "Failed to fetch task",
+}
+```
+
 ---
 
 ### Update Task
@@ -266,6 +406,44 @@ Authorization: Bearer <your_access_token>
     "priority": "High",
     "dueDate": "2025-02-05"
     "assignee": "some_user_ID"
+}
+```
+
+**Responses:**
+
+status 200:
+
+```
+{
+  "message": "Task updated successfully"
+}
+```
+
+**Error Responses**
+
+status 400:
+
+```
+{
+    message: "could not find task",
+    //or message: "Cannot mark task as 'Done' while subtasks are incomplete."
+    //or message: "Only the 'status' field can be updated, and it must be provided."
+}
+```
+
+status 404:
+
+```
+{
+  message: "Task not found"
+}
+```
+
+status 500:
+
+```
+{
+    message: "Failed to update task"
 }
 ```
 
@@ -347,6 +525,26 @@ Authorization: Bearer <your_access_token>
 }
 ```
 
+**Response:**
+
+status: 200:
+
+```
+{
+  "message": "Comment added successfully"
+}
+```
+
+**Error Responses**
+
+status: 500:
+
+```
+{
+{ message: "Failed to delete task", error : some_error_message }
+}
+```
+
 ---
 
 ### get Comments of a Task
@@ -367,7 +565,7 @@ status: 200:
 
 ```
 {
-{ message: "Comments found", comments: [{comment1},{comment2}] }
+{ message: "Comments found", comments: [{comment1},{comment2},...] }
 }
 ```
 
@@ -457,6 +655,54 @@ Authorization: Bearer <your_access_token>
 - `title`: string
 - `status`:`pending`, `in-progress`, `done`
 
+**Request Body:**
+
+```
+{
+    "title":"subtask title",
+    "status": "subtask-status"
+}
+```
+
+**Response:**
+
+status: 200:
+
+```
+{
+    message: "Task updated successfully"
+    task: {
+        // ...subtask object as returned by taskService.createSubTask
+    }
+}
+```
+
+**Error Responses**
+
+status: 400:
+
+```
+{
+    "message": "Only the 'status' field can be updated, and it must be provided.",
+}
+```
+
+status: 404:
+
+```
+{
+    "message": "Task not found"
+}
+```
+
+status: 500:
+
+```
+{
+    "message": "Error creating subtask",
+}
+```
+
 ---
 
 ### Comment Subtask
@@ -483,5 +729,25 @@ Authorization: Bearer <your_access_token>
 
 - `title`: string
 - `status`:`pending`, `in-progress`, `done`
+
+**Response:**
+
+status: 200:
+
+```
+{
+    message: "Comment added successfully"
+}
+```
+
+**Error Responses**
+
+status: 500:
+
+```
+{
+    "message": "Error updating subtask",
+}
+```
 
 ---
