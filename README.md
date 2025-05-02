@@ -44,9 +44,42 @@ TaskSync is a feature-rich task management system that provides authentication, 
 
 ## Installation
 
-```sh
-git clone https://github.com/wailaa/tasksync.git
-cd tasksync
-npm install
-npm run dev
-```
+- Clone the repository:
+
+  - Run following commands to clone and install dependencies:
+
+  ```sh
+  git clone https://github.com/wailaa/tasksync.git
+  cd tasksync
+  npm install
+  ```
+
+- Set up Redis with Docker:
+
+  - Make sure you have [Docker](https://www.docker.com/get-started/) installed on your system.
+  - Pull and run a Redis container:
+
+  ```sh
+  docker run --name tasksync-redis -p 6379:6379 -d redis
+  ```
+
+  - Verify Redis is running:
+
+  ```sh
+  docker ps
+  ```
+
+- Create a .env file in the project root with the following environment variables:
+  ```sh
+  PORT=3000
+  MONGO_URI=your_mongodb_connection_string
+  JWT_SECRET=your_jwt_secret_key
+  JWT_ACCESS_EXPIRES=1h
+  JWT_REFRESH_EXPIRES=7d
+  URI_ORIGIN1=http://localhost:3000
+  URI_ORIGIN2=http://127.0.0.1:5500
+  ```
+- Run application :
+  ```sh
+  npm run dev
+  ```
