@@ -104,10 +104,24 @@ export const refreshRequest = async (req, res) => {
 };
 
 export const assignRoleToUser = async (res, req) => {
+    const { id } = req.params.id;
+    const { role } = req.body.role;
+    const validRoles = ['admin', 'manager', 'user'];
+
+
+    if (!validRoles.includes(role)) {
+        return res.status(400).json({ error: "Invalid role" });
+    }
+
     try {
-        const user = await userService.findByIdAndUpdate(req.params.id, {
-            role: req.body.role,
+        const user = await userService.findByIdAndUpdate(id, {
+            role: role,
         });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
         res.json(user);
     } catch (error) {
         res.status(400).json({ message: error.message });

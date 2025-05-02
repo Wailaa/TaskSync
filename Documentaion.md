@@ -95,6 +95,70 @@ Authorization: Bearer <your_access_token>
 
 ---
 
+### Role Management
+
+**PUT** `/api/user/:id/role`
+
+**Description:** Change a user's role. Restricted to admin users only.
+
+**Headers:**
+
+```
+Authorization: Bearer <your_access_token>
+```
+
+**Request Body:**
+
+```
+{
+    "role":"user" // Possible values: "user", "manager", "admin"
+}
+```
+
+**Responses:**
+
+status: 200
+
+```
+{
+    "message": "User role updated successfully",
+    "user": {
+        "id": "user_id",
+        "username": "username",
+        "role": "new_role"
+    }
+}
+```
+
+status: 400
+**Error Responses:**
+
+```
+{
+    "message": "Invalid role",
+}
+```
+
+status 403:
+
+```
+{
+    "message": "Not authorized (non-admin user)",
+}
+```
+
+status 404:
+
+```
+{
+    "message": "User not found",
+}
+```
+
+User not found
+
+---
+
 ## Task Management
 
 ### Create Task
