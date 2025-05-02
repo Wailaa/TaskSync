@@ -1,0 +1,62 @@
+@startuml database-diagram
+entity "User" as User {
+  * _id : ObjectId
+  * username : String
+  * email : String
+  * password : String
+  * role : String (admin|manager|user)
+  * manager : ObjectId (User)
+  * createdAt : Date
+  * updatedAt : Date
+  --
+  * tasks : [Task]
+  * activityLogs : [ActivityLog]
+  * notifications : [Notification]
+}
+
+entity "Task" as Task {
+  * _id : ObjectId
+  * title : String
+  * description : String
+  * status : String
+  * dueDate : Date
+  --
+  * subtasks : [Subtask]
+  * comments : [Comment]
+}
+
+entity "Subtask" as Subtask {
+  * _id : ObjectId
+  * title : String
+  * status : String
+}
+
+entity "Comment" as Comment {
+  * _id : ObjectId
+  * author : ObjectId (User)
+  * content : String
+  * createdAt : Date
+}
+
+entity "ActivityLog" as ActivityLog {
+  * action : String
+  * taskId : ObjectId (Task)
+  * subTaskId : ObjectId (Subtask)
+  * createdAt : Date
+}
+
+entity "Notification" as Notification {
+  * type : String
+  * message : String
+  * task : ObjectId (Task)
+  * isRead : Boolean
+  * createdAt : Date
+}
+
+User -- "0..*" Task : embeds >
+Task -- "0..*" Subtask : embeds >
+Task -- "0..*" Comment : embeds >
+User -- "0..*" ActivityLog : embeds >
+User -- "0..*" Notification : embeds >
+User -- "0..1" User : manager >
+@enduml

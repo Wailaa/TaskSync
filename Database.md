@@ -16,6 +16,8 @@ The JSON-like document structure also integrates seamlessly with our Express.js 
 
 ## Database Model
 
+![database model](TaskSyncDiagram.png)
+
 The database architecture centers around a user-centric model where tasks belong to users. Rather than creating separate collections for tasks, I embedded tasks directly in user documents, optimizing for the most common access pattern: users accessing their own tasks.
 
 ### Collections
